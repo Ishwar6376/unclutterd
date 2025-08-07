@@ -1,7 +1,7 @@
 "use client";
 import Galaxy from "@/components/galaxy/page";
 import TextType from '../components/text-type/page';
-
+import { Book } from 'lucide-react';
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -11,13 +11,13 @@ export default function Home() {
       </div>
 
       {/* Content Layer */}
-      <div className="relative flex flex-col items-center justify-center w-1/2 h-1/2 text-white px-4 py-6 sm:py-10">
+      <div className="relative flex flex-col items-center justify-center w-1/2 h-1/2 text-white px-4 py-6 sm:py-10 sm:flex flex-wrap">
         {/* Navbar */}
-        <nav className="fixed top-5 w-full max-w-7xl mx-auto px-4 py-3 backdrop-blur-md bg-white/10 border-b border-white/20 shadow-md text-white rounded-2xl">
+        <nav className="fixed top-15  w-1/2 max-w-7xl mx-auto px-10 py-5 backdrop-blur-md bg-white/10 border-b border-white/10 shadow-md text-white rounded-4xl border-2 boarder-white">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg sm:text-xl font-bold">Uncluttered</h1>
+            <h1 className="text-lg sm:text-xl font-bold flex"><Book/> Unclutter</h1>
             <div className="space-x-3 sm:space-x-4">
-              <button className="hover:text-orange-500 transition hover:cursor-pointer">
+              <button className="hover:text-green-500 transition hover:cursor-pointer">
                 Signup
               </button>
               <button className="hover:text-orange-500 transition hover:cursor-pointer">
@@ -28,10 +28,10 @@ export default function Home() {
         </nav>
 
         {/* Hero Content */}
-        <div className="mt-24 sm:mt-32 text-center px-2 w-full">
+        <div className=" sm:mt-32 text-center px-2 w-full">
           <div className="text-2xl sm:text-4xl font-bold">
             <TextType
-            text={["Uncluttered: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly"]}
+            text={["Unclutter: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly"]}
             typingSpeed={75}
             pauseDuration={1500}
             showCursor={true}
