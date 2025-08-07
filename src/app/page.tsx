@@ -2,7 +2,26 @@
 import Galaxy from "@/components/galaxy/page";
 import TextType from '../components/text-type/page';
 import { Book } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
+
 export default function Home() {
+  const { loginWithRedirect } = useAuth0();
+  const handleLogin = () => {
+    loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'login',  // 👈 forces login screen
+      }
+    });
+  };
+
+  const handleSignup = () => {
+    loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup', // 👈 forces signup screen
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       {/* Galaxy Background */}
@@ -17,10 +36,12 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <h1 className="text-lg sm:text-xl font-bold flex"><Book/> Unclutter</h1>
             <div className="space-x-3 sm:space-x-4">
-              <button className="hover:text-green-500 transition hover:cursor-pointer">
+              <button className="hover:text-green-500 transition hover:cursor-pointer"
+              onClick={handleSignup}>
                 Signup
               </button>
-              <button className="hover:text-orange-500 transition hover:cursor-pointer">
+              <button className="hover:text-orange-500 transition hover:cursor-pointer"
+              onClick={handleLogin}>
                 Login
               </button>
             </div>
