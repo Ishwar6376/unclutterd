@@ -1,8 +1,19 @@
+"use client";
 import React from "react";
 import { Book, Bell } from "lucide-react";
 import GlareHover from "@/components/glareHover/page";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Home() {
+    const { logout } = useAuth0();
+    const handleLogout = () => {
+      logout({
+        logoutParams: {
+          returnTo: typeof window !== "undefined" ? window.location.origin : "",
+        },
+      });
+    };
+  
   return (
     <div id="webcrumbs">
       <div className="min-h-screen bg-gray-900">
@@ -80,12 +91,9 @@ export default function Home() {
                         Help
                       </a>
                       <div className="border-t"></div>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 hover:bg-neutral-100 hover:text-black"
-                      >
-                        Sign out
-                      </a>
+                      <button onClick={handleLogout} className="block px-4 py-2 hover:bg-neutral-100 hover:text-black">
+                        Logout
+                      </button>
                     </div>
                   </div>
                 </details>
