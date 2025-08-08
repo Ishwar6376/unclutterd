@@ -6,7 +6,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   const onRedirectCallback = (appState: any) => {
-    router.push(appState?.returnTo || "/");
+    router.push(appState?.returnTo || "");
   };
 
   return (

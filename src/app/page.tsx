@@ -1,24 +1,27 @@
 "use client";
 import Galaxy from "@/components/galaxy/page";
-import TextType from '../components/text-type/page';
-import { Book } from 'lucide-react';
-import { useAuth0 } from '@auth0/auth0-react';
+import TextType from "../components/text-type/page";
+import { Book } from "lucide-react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Home() {
   const { loginWithRedirect } = useAuth0();
   const handleLogin = () => {
     loginWithRedirect({
       authorizationParams: {
-        screen_hint: 'login',  // 👈 forces login screen
-      }
+        screen_hint: "login",
+         returnTo: typeof window !== "undefined" ? window.location.origin : "/home",
+      },
+      
     });
   };
 
   const handleSignup = () => {
     loginWithRedirect({
       authorizationParams: {
-        screen_hint: 'signup', // 👈 forces signup screen
-      }
+        screen_hint: "signup",
+         returnTo: typeof window !== "undefined" ? window.location.origin : "/home",
+      },
     });
   };
 
@@ -34,14 +37,20 @@ export default function Home() {
         {/* Navbar */}
         <nav className="fixed top-15  w-1/2 max-w-7xl mx-auto px-10 py-5 backdrop-blur-md bg-white/10 border-b border-white/10 shadow-md text-white rounded-4xl border-2 boarder-white">
           <div className="flex justify-between items-center">
-            <h1 className="text-lg sm:text-xl font-bold flex"><Book/> Unclutter</h1>
+            <h1 className="text-lg sm:text-xl font-bold flex">
+              <Book /> Unclutter
+            </h1>
             <div className="space-x-3 sm:space-x-4">
-              <button className="hover:text-green-500 transition hover:cursor-pointer"
-              onClick={handleSignup}>
+              <button
+                className="hover:text-green-500 transition hover:cursor-pointer"
+                onClick={handleSignup}
+              >
                 Signup
               </button>
-              <button className="hover:text-orange-500 transition hover:cursor-pointer"
-              onClick={handleLogin}>
+              <button
+                className="hover:text-orange-500 transition hover:cursor-pointer"
+                onClick={handleLogin}
+              >
                 Login
               </button>
             </div>
@@ -52,12 +61,14 @@ export default function Home() {
         <div className=" sm:mt-32 text-center px-2 w-full">
           <div className="text-2xl sm:text-4xl font-bold">
             <TextType
-            text={["Unclutter: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly"]}
-            typingSpeed={75}
-            pauseDuration={1500}
-            showCursor={true}
-            cursorCharacter="|"
-          />
+              text={[
+                "Unclutter: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly",
+              ]}
+              typingSpeed={75}
+              pauseDuration={1500}
+              showCursor={true}
+              cursorCharacter="|"
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
