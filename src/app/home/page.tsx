@@ -54,7 +54,7 @@ export default function Home() {
     ]
   };
   return (
-    <div id="webcrumbs">
+    <div className="flex flex-col min-h-screen">
       <div className="min-h-screen bg-gray-900">
         {/* Header */}
         <header className="bg-gray-800 shadow-sm">
@@ -142,9 +142,9 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-6">
+        <main className="container mx-auto px-4 py-6 ">
           {/* Hero Section */}
-          <section className="bg-gradient-to-r from-primary-500 to-primary-700 rounded-xl p-8 mb-8 text-white">
+          <section className="bg-gradient-to-r  rounded-xl p-8 mb-8 text-white">
             <div className="md:flex items-center justify-between">
               <div className="md:w-2/3 mb-6 md:mb-0">
                 <h2 className="text-3xl font-bold mb-3">
@@ -175,50 +175,47 @@ export default function Home() {
           </section>
 
           {/* Search Bar */}
-          <div className="relative mb-8">
+          <div className="relative mb-8 text-black">
             <div className="flex bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="flex items-center px-3 text-gray-400">
-                <span className="material-symbols-outlined">search</span>
-              </div>
               <input
                 type="text"
                 placeholder="Search for questions..."
                 className="w-full py-3 px-2 focus:outline-none"
               />
-              <button className="bg-primary-600 text-white px-6 font-medium hover:bg-primary-700 transition-colors">
+              <button className="bg-orange-500 hover:bg-orange-600 text-black px-6 font-medium hover:cursor-pointer ">
                 Search
               </button>
             </div>
           </div>
 
           {/* Content Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-gray-900">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-gray-900 ">
             {/* Main Column */}
-            <div className="lg:col-span-2 bg-gray-700">
+            <div className="lg:col-span-2 ">
               {/* Tabs */}
               <div className="border-b mb-6">
                 <div className="flex space-x-6">
-                  <button className="px-4 py-2 border-b-2 border-primary-600 font-medium text-primary-600">
+                  <button className="px-4 py-2 border-b-2 border-primary-600 font-medium text-white">
                     Latest
                   </button>
-                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-primary-600 transition-colors">
+                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-orange-500 hover:cursor-pointer">
                     Hot
                   </button>
-                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-primary-600 transition-colors">
+                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-orange-500 hover:cursor-pointer">
                     Most Answered
                   </button>
-                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-primary-600 transition-colors">
+                  <button className="px-4 py-2 border-b-2 border-transparent hover:text-orange-500 hover:cursor-pointer">
                     Unanswered
                   </button>
                 </div>
               </div>
 
               {/* Questions List */}
-              <div className="space-y-6 bg-gray-800">
+              <div className="space-y-6  text-white">
                 {/* Question Card */}
                 <QuestionComponent question={sampleQuestion} />
                 <div className="flex justify-center mt-8">
-                  <button className="text-black flex items-center space-x-2 bg-gray-700 border border-gray-300 rounded-lg px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                  <button className="text-black flex items-center space-x-2 bg-orange-500 border border-gray-300 rounded-lg px-4 py-2 text-sm hover:bg-orange-600 hover:cursor-pointer">
                     <span>Load more questions</span>
                   </button>
                 </div>
@@ -229,107 +226,25 @@ export default function Home() {
             {/* Sidebar */}
             <div className="lg:col-span-1 space-y-6">
               {/* Ask Question Button */}
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <button className="w-full bg-primary-600 text-white py-3 rounded-lg font-medium flex items-center justify-center space-x-2 hover:bg-primary-700 transition-colors">
-                  <span className="material-symbols-outlined">add_circle</span>
-                  <span>Ask a Question</span>
-                </button>
-              </div>
 
               {/* Topics */}
-              <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="bg-gray-700 p-6 rounded-lg shadow-sm">
                 <h3 className="font-semibold mb-4">Popular Topics</h3>
               </div>
 
               {/* Top Contributors */}
-              <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="bg-gray-700 p-6 rounded-lg shadow-sm">
                 <h3 className="font-semibold mb-4">Top Contributors</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold">
-                      JD
-                    </div>
-                    <div>
-                      <div className="font-medium">John Doe</div>
-                      <div className="text-xs text-gray-500">
-                        352 contributions
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-semibold">
-                      AS
-                    </div>
-                    <div>
-                      <div className="font-medium">Alice Smith</div>
-                      <div className="text-xs text-gray-500">
-                        293 contributions
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-semibold">
-                      RJ
-                    </div>
-                    <div>
-                      <div className="font-medium">Robert Johnson</div>
-                      <div className="text-xs text-gray-500">
-                        247 contributions
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-semibold">
-                      EW
-                    </div>
-                    <div>
-                      <div className="font-medium">Emily Wilson</div>
-                      <div className="text-xs text-neutral-500">
-                        189 contributions
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button className="w-full text-primary-600 text-sm mt-4 hover:underline">
+                
+                <button className="w-full text-primary-600 text-sm mt-4 hover:underline hover:">
                   View all contributors
                 </button>
               </div>
 
               {/* Recent Activity */}
-              <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="bg-gray-700 p-6 rounded-lg shadow-sm">
                 <h3 className="font-semibold mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                  <div className="border-l-2 border-green-500 pl-3 py-1">
-                    <div className="text-sm">John answered a question</div>
-                    <a
-                      href="#"
-                      className="text-xs text-gray-500 hover:text-primary-600 transition-colors"
-                    >
-                      How to use CSS Grid for responsive layouts?
-                    </a>
-                    <div className="text-xs text-gray-400">5 minutes ago</div>
-                  </div>
-                  <div className="border-l-2 border-blue-500 pl-3 py-1">
-                    <div className="text-sm">Sarah asked a question</div>
-                    <a
-                      href="#"
-                      className="text-xs text-gray-500 hover:text-primary-600 transition-colors"
-                    >
-                      Best practices for API error handling in Node.js?
-                    </a>
-                    <div className="text-xs text-gray-400">20 minutes ago</div>
-                  </div>
-                  <div className="border-l-2 border-purple-500 pl-3 py-1">
-                    <div className="text-sm">Robert commented</div>
-                    <a
-                      href="#"
-                      className="text-xs text-neutral-500 hover:text-primary-600 transition-colors"
-                    >
-                      How to optimize webpack build times?
-                    </a>
-                    <div className="text-xs text-gray-400">1 hour ago</div>
-                  </div>
-                </div>
+                
                 <button className="w-full text-primary-600 text-sm mt-4 hover:underline">
                   View all activity
                 </button>

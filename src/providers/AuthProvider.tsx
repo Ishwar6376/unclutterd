@@ -6,7 +6,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter();
 
   const onRedirectCallback = (appState: any) => {
-    router.push(appState?.returnTo || "");
+    router.push(appState?.returnTo || "/home");
   };
 
   return (
@@ -14,7 +14,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN!}
       clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID!}
       authorizationParams={{
-        redirect_uri: typeof window !== "undefined" ? window.location.origin : "",
+        redirect_uri: typeof window !== "undefined" ? `${window.location.origin}/home`: "",
+
       }}
       onRedirectCallback={onRedirectCallback}
     >

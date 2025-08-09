@@ -9,15 +9,15 @@ interface QuestionProps {
 
 export default function QuestionComponent({ question }: QuestionProps) {
   return (
-    <div className="border rounded-lg p-4 bg-gray-700 text-white shadow">
+    <div className="border rounded-lg p-4 bg-gray-700 text-white">
       <h1 className="text-2xl font-bold">{question.title}</h1>
       <p className="text-white mt-2">{question.body}</p>
 
-      <div className="flex gap-2 mt-3">
+      <div className="flex gap-2 mt-3 ">
         {question.tags.map((tag, idx) => (
           <span
             key={idx}
-            className="bg-gray-700 text-gray-800 px-2 py-1 rounded text-sm"
+            className="bg-orange-700 text-white px-2 py-1 rounded text-sm"
           >
             {tag}
           </span>

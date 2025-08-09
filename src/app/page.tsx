@@ -10,7 +10,7 @@ export default function Home() {
     loginWithRedirect({
       authorizationParams: {
         screen_hint: "login",
-         returnTo: typeof window !== "undefined" ? window.location.origin : "/home",
+        returnTo:'/home'
       },
       
     });
@@ -20,7 +20,7 @@ export default function Home() {
     loginWithRedirect({
       authorizationParams: {
         screen_hint: "signup",
-         returnTo: typeof window !== "undefined" ? window.location.origin : "/home",
+        returnTo:'/home'
       },
     });
   };

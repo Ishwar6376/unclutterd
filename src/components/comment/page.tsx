@@ -29,9 +29,9 @@ export default function CommentList({
   const renderComments = (commentList: CommentType[], level = 0) =>
     commentList.map((comment) => (
       <div key={comment.id} className="mt-3" style={{ marginLeft: level * 20 }}>
-        <div className="bg-gray-100 p-2 rounded">
+        <div className="bg-gray-600 p-2 rounded">
           <p>{comment.body}</p>
-          <div className="text-xs text-gray-500">— {comment.author.username}</div>
+          <div className="text-xs text-orange-500">— {comment.author.username}</div>
           <button
             className="text-blue-500 text-xs mt-1"
             onClick={() => setReplyTo(comment.id)}
