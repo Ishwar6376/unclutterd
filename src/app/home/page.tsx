@@ -3,6 +3,9 @@ import React from "react";
 import { Book, Bell } from "lucide-react";
 import GlareHover from "@/components/glareHover/page";
 import { useAuth0 } from "@auth0/auth0-react";
+import { Question } from "@/components/type";
+import  QuestionComponent  from "@/components/question/page";
+
 
 export default function Home() {
     const { logout } = useAuth0();
@@ -13,7 +16,43 @@ export default function Home() {
         },
       });
     };
-  
+    const sampleQuestion: Question = {
+    id: "q1",
+    title: "How does JavaScript event loop work?",
+    body: "I've been trying to understand how async tasks are handled in JS...",
+    tags: ["javascript", "event-loop", "async"],
+    author: { id: "u1", username: "coder123" },
+    comments: [
+      {
+        id: "c1",
+        body: "You can think of it as a queue system.",
+        author: { id: "u2", username: "devGuy" },
+        replies: [
+          {
+            id: "c2",
+            body: "Exactly! Microtasks vs Macrotasks is key.",
+            author: { id: "u3", username: "proCoder" },
+            replies: []
+          }
+        ]
+      }
+    ],
+    answers: [
+      {
+        id: "a1",
+        body: "The event loop handles async callbacks...",
+        author: { id: "u4", username: "expertDev" },
+        comments: [
+          {
+            id: "c3",
+            body: "This is helpful, thanks!",
+            author: { id: "u5", username: "happyUser" },
+            replies: []
+          }
+        ]
+      }
+    ]
+  };
   return (
     <div id="webcrumbs">
       <div className="min-h-screen bg-gray-900">
@@ -153,9 +192,9 @@ export default function Home() {
           </div>
 
           {/* Content Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-gray-900">
             {/* Main Column */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 bg-gray-700">
               {/* Tabs */}
               <div className="border-b mb-6">
                 <div className="flex space-x-6">
@@ -175,11 +214,11 @@ export default function Home() {
               </div>
 
               {/* Questions List */}
-              <div className="space-y-6">
+              <div className="space-y-6 bg-gray-800">
                 {/* Question Card */}
-
+                <QuestionComponent question={sampleQuestion} />
                 <div className="flex justify-center mt-8">
-                  <button className="text-black flex items-center space-x-2 bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
+                  <button className="text-black flex items-center space-x-2 bg-gray-700 border border-gray-300 rounded-lg px-4 py-2 text-sm hover:bg-gray-50 transition-colors">
                     <span>Load more questions</span>
                   </button>
                 </div>
@@ -301,166 +340,7 @@ export default function Home() {
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t mt-12 py-8">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="material-symbols-outlined text-primary-600 text-2xl">
-                    help_center
-                  </span>
-                  <h2 className="text-xl font-bold">QueryQuest</h2>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  The community-driven platform for asking and answering
-                  programming questions.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Platform</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Questions
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Users
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Tags
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Badge
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Company</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      About
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Blog
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Careers
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Contact
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Support</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Help Center
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Terms of Service
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Privacy Policy
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 transition-colors"
-                    >
-                      Cookie Policy
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-              <div className="text-sm text-gray-500 mb-4 md:mb-0">
-                © 2023 QueryQuest. All rights reserved.
-              </div>
-              <div className="flex space-x-4">
-                <a
-                  href="#"
-                  className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-                >
-                  <i className="fa-brands fa-twitter text-gray-600"></i>
-                </a>
-                <a
-                  href="#"
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <i className="fa-brands fa-facebook text-gray-600"></i>
-                </a>
-                <a
-                  href="#"
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <i className="fa-brands fa-github text-gray-600"></i>
-                </a>
-                <a
-                  href="#"
-                  className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-                >
-                  <i className="fa-brands fa-linkedin text-neutral-600"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-        </footer>
+        
       </div>
     </div>
   );
