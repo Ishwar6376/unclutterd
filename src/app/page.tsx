@@ -64,7 +64,7 @@ export default function Home() {
         <div className="sm:mt-32 text-center px-2 w-full">
           <div className="text-2xl sm:text-4xl font-bold">
             <TextType
-              text={["Unclutter: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly"]}
+              text={["Uncluttered: Where Curiosity Meets Clarity — Ask Boldly, Solve Brilliantly"]}
               typingSpeed={75}
               pauseDuration={1500}
               showCursor={true}
