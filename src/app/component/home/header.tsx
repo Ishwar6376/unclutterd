@@ -1,7 +1,14 @@
+'use client';
 import { Sun, Bell, User, Search, Menu } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 export default function Header({ onMenuClick }:any) {
+  const router = useRouter();
+  const handleProfileClick = () => {
+    router.push("/profile");
+  }
   const [showSearch, setShowSearch] = useState(false);
 
   return (
@@ -35,7 +42,7 @@ export default function Header({ onMenuClick }:any) {
       <div className="flex items-center gap-4">
         <Sun className="cursor-pointer" />
         <Bell className="cursor-pointer" />
-        <User className="cursor-pointer" />
+        <User className="cursor-pointer"  onClick={handleProfileClick}/>
       </div>
 
       {/* Mobile Search Overlay */}
