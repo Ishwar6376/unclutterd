@@ -1,6 +1,6 @@
 "use client";
-import Galaxy from "@/components/galaxy/page";
-import TextType from '../components/text-type/page';
+import Galaxy from "@/components/uiComponent/galaxy/page";
+import TextType from '@/components/uiComponent/text-type/page';
 import { Book } from 'lucide-react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Montserrat } from "next/font/google";
@@ -40,7 +40,7 @@ export default function Home() {
       {/* Content Layer */}
       <div className="relative flex flex-col items-center justify-center w-1/2 h-1/2 text-white px-4 py-6 sm:py-10 sm:flex flex-wrap">
         {/* Navbar */}
-        <nav className="fixed top-15 w-1/2 max-w-7xl mx-auto px-10 py-5 backdrop-blur-md bg-white/10 border-b border-white/10 shadow-md text-white rounded-4xl border-2 border-white">
+        <nav className="fixed top-15 w-1/2 max-w-7xl mx-auto px-10 py-5 backdrop-blur-md bg-white/10 border-b border-white/10 shadow-md text-white rounded-4xl border-2 ">
           <div className="flex justify-between items-center">
             <h1 className="text-lg sm:text-xl font-bold flex "><Book color="#f97316" /> Uncluttered</h1>
             <div className="space-x-3 sm:space-x-4">

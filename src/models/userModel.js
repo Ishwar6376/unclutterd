@@ -1,13 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
-  passwordHash: { type: String, required: true }, // store hashed password
-  avatarUrl: { type: String, default: '' },
-  bio: { type: String, maxlength: 300 },
-  karma: { type: Number, default: 0 }, // total points from posts & comments
+  password: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('User', userSchema);
+export default mongoose.model("User", userSchema);

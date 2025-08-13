@@ -10,18 +10,23 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.4.0",
+    "@auth0/nextjs-auth0": "^4.9.0",
+    "axios": "^1.11.0",
     "gsap": "^3.13.0",
     "lucide-react": "^0.536.0",
+    "mongoose": "^8.17.1",
     "next": "15.4.5",
     "ogl": "^1.0.11",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/estree": "^1.0.8",
     "@types/json-schema": "^7.0.15",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
