@@ -7,7 +7,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import Header from "@/app/component/home/header"
 import Sidebar from "@/app/component/home/sidebar"
 import MainContent from "@/app/component/home/heroSection"
-    import axios from 'axios';
+import axios from 'axios';
 
 export default  function Home() {
     const { logout } = useAuth0();
