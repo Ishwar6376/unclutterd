@@ -5,8 +5,7 @@ export default function MainContent() {
     <main className="flex-1 bg-black text-white p-4 md:p-6 overflow-auto">
      <MainHeader/>
       {/* Question List */}
-      <QuestionCard />
-      <QuestionCard />
+      
     </main>
   );
 }

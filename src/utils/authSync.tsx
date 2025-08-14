@@ -15,5 +15,5 @@ export default function AuthSync() {
     }
   }, [isLoading, isAuthenticated, user, setUser]);
 
-  return null; // no UI, just syncing data
+  return null;
 }
