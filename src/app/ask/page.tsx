@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -13,44 +13,19 @@ interface AskQuestionProps {
     title: string;
     description: string;
     tags: string[];
-    images: File[];
+    images: File[];        // Raw files
+    uploadedUrls: string[]; // ✅ Uploaded image URLs
   }) => void;
 }
 
 export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestionProps) {
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [images, setImages] = useState<File[]>([]);
+  const [images, setImages] = useState<File[]>([]); 
   const [previews, setPreviews] = useState<string[]>([]);
-
-  const [file, setFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState("");
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]); 
   const [loading, setLoading] = useState(false);
-
-  const handleUpload = async () => {
-    if (!file) return alert("Please select a file");
-
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    setLoading(false);
-
-    if (data.url) {
-      setImageUrl(data.url);
-    } else {
-      alert("Upload failed");
-    }
-  };
-
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
@@ -69,23 +44,51 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
     handleImageChange(e.dataTransfer.files);
   };
 
+  const handleUpload = async () => {
+    setLoading(true);
+    const newUploadedUrls: string[] = [];
+
+    for (const img of images) {
+      const formData = new FormData();
+      formData.append("file", img);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        newUploadedUrls.push(data.url); 
+      }
+    }
+
+    setUploadedUrls(newUploadedUrls); 
+    setLoading(false);
+    toast.success(`Uploaded ${newUploadedUrls.length} image(s)`);
+  };
+
   const handleSubmit = () => {
     if (onSubmit) {
-      onSubmit({ title, description, tags: selectedTags, images });
+      onSubmit({ title, description, tags: selectedTags, images, uploadedUrls });
     }
     setTitle("");
     setDescription("");
     setSelectedTags([]);
     setImages([]);
     setPreviews([]);
+    setUploadedUrls([]); 
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-gray-900 shadow-md rounded-lg space-y-6">
+    <div
+      className="max-w-3xl mx-auto p-6 bg-gray-900 shadow-md rounded-lg space-y-6"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+    >
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Ask a Question</h1>
-       
       </div>
 
       {/* Title */}
@@ -115,33 +118,24 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
         <div className="flex flex-wrap gap-2">
-          
         </div>
       </div>
 
       {/* Image Upload */}
-      <div className="bg-gray-800">
+      <div className="bg-gray-800 p-6 rounded-lg">
         <label className="block text-sm font-medium text-gray-700 mb-2">Attach Images</label>
-        <div className="p-6">
-      <input
-        type="file"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-      />
-      <button
-        onClick={handleUpload}
-        className="bg-orange-500 text-white px-4 py-2 rounded mt-2"
-      >
-        {loading ? "Uploading..." : "Upload"}
-      </button>
-
-      {imageUrl && (
-        <div className="mt-4">
-          <p>Uploaded Image:</p>
-          <img src={imageUrl} alt="Uploaded" className="w-64 rounded" />
-        </div>
-      )}
-    </div>
-
+        <input
+          type="file"
+          multiple
+          onChange={(e) => handleImageChange(e.target.files)}
+          className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+        />
+        <button
+          onClick={handleUpload}
+          className="bg-orange-500 text-white px-4 py-2 rounded mt-2"
+        >
+          {loading ? "Uploading..." : "Upload All"}
+        </button>
         {previews.length > 0 && (
           <div className="mt-3 grid grid-cols-3 gap-3">
             {previews.map((src, idx) => (
@@ -152,6 +146,22 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
                 className="w-full h-24 object-cover rounded-md border"
               />
             ))}
+          </div>
+        )}
+
+        {uploadedUrls.length > 0 && (
+          <div className="mt-4">
+            <p className="text-gray-300">Uploaded Images:</p>
+            <div className="grid grid-cols-3 gap-3 mt-2">
+              {uploadedUrls.map((url, idx) => (
+                <img
+                  key={idx}
+                  src={url}
+                  alt={`uploaded-${idx}`}
+                  className="w-full h-24 object-cover rounded-md border"
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
