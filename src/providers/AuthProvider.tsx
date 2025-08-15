@@ -2,7 +2,7 @@
 
 import { Auth0Provider } from "@auth0/auth0-react";
 import { useRouter } from "next/navigation";
-import AuthSync from "@/components/authSync"; // we'll create this
+import AuthSync from "@/utils/authSync"; // we'll create this
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
