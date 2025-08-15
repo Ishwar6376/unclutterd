@@ -4,38 +4,43 @@ import multer from "multer";
 import { promisify } from "util";
 import fs from "fs";
 
-// Multer config to store uploaded file temporarily
+// Multer config — store temporarily in /tmp
 const upload = multer({ dest: "/tmp" });
-const uploadMiddleware = upload.single("file");
+const uploadMiddleware = upload.array("files", 20); // Allow up to 20 files
 const runMiddleware = promisify(uploadMiddleware);
 
-export async function POST(req: Request) {
-  try {
-    // Convert request to Node.js req/res so Multer can work
-    const formData: any = await (req as any).formData?.();
-    const file = formData?.get("file") as File;
+export const runtime = "nodejs";
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+export async function POST(req: any) {
+  try {
+    // Convert Request -> Node req/res so Multer works
+    const { req: nodeReq, res: nodeRes } = req;
+    await runMiddleware(nodeReq, nodeRes);
+
+    // Multer puts files on nodeReq.files
+    const files = nodeReq.files || [];
+
+    if (files.length === 0) {
+      return NextResponse.json({ urls: [] }, { status: 200 });
     }
 
-    // Save file temporarily
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const tempPath = `/tmp/${file.name}`;
-    fs.writeFileSync(tempPath, buffer);
+    const urls: string[] = [];
 
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(tempPath, {
-      folder: "uncluttered_uploads",
-    });
-    // Delete temp file
-    console.log(result)
-    fs.unlinkSync(tempPath);
+    for (const file of files) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "uncluttered_uploads",
+      });
 
-    return NextResponse.json({ url: result.url });
+      urls.push(result.secure_url);
+
+      // Delete temp file after upload
+      fs.unlinkSync(file.path);
+    }
+
+    return NextResponse.json({ urls }, { status: 200 });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
