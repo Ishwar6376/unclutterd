@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-
+import axios from "axios";
+import {useUserStore} from "@/store/userStore"
 interface Tag {
   id: string;
   name: string;
@@ -26,6 +27,8 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
   const [previews, setPreviews] = useState<string[]>([]);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]); 
   const [loading, setLoading] = useState(false);
+  const User=useUserStore().user;
+  console.log(User)
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
@@ -68,16 +71,27 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
     toast.success(`Uploaded ${newUploadedUrls.length} image(s)`);
   };
 
-  const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit({ title, description, tags: selectedTags, images, uploadedUrls });
+  const handleSubmit = async () => {
+    try {
+      const res=await axios.post("/api/ask",{
+        title,
+        description,
+        images:uploadedUrls,
+        author:User,
+      })
+      if (res.status===201){
+        toast.success("Qusetion posted successfully");
+        setTitle("");
+        setDescription("");
+        setSelectedTags([]);
+        setImages([]);
+        setPreviews([]);
+        setUploadedUrls([]);
+
+      }
+    } catch (error) {
+      toast.error("Failed to post question")
     }
-    setTitle("");
-    setDescription("");
-    setSelectedTags([]);
-    setImages([]);
-    setPreviews([]);
-    setUploadedUrls([]); 
   };
 
   return (
@@ -170,11 +184,13 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
       <div className="text-right">
         <button
           onClick={handleSubmit}
-          disabled={!title.trim() || !description.trim()}
-          className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 disabled:opacity-50 hover:cursor-pointer"
-        >
-          Post Question
+          disabled={!title.trim() || !description.trim() || loading} // disable while loading
+          className={`bg-orange-500 text-white px-6 py-2 rounded-md 
+           hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition`}
+          >
+          {loading ? "Posting..." : "Post Question"}
         </button>
+
       </div>
     </div>
   );
