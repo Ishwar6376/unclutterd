@@ -1,43 +1,62 @@
-import { MessageSquare, Share2, ArrowBigUp,ArrowBigDown } from "lucide-react";
-import { useState } from "react";
+"use client";
+import { useEffect, useState } from "react";
+import axios from "axios";
+interface Question {
+  _id: string;
+  title: string;
+  description: string;
+}
 
-export default function QuestionCard(queTitle:String,queDis:String,photoUrl:String) {
-  const [title, setTitle] = useState("");
-  const [subTitle, setSubTitle] = useState("");
+export default function QuestionsFeed() {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [after, setAfter] = useState<string | null>();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    async function fetchLatestId() {
+      const res = await axios.get("/api/findDBID");
+      setAfter(res.data.latestId);
+    }
+    fetchLatestId();
+  }, []);
+
+  async function fetchQuestions() {
+    if (loading) return;
+    setLoading(true);
+    console.log("After", after);
+    const res = await axios.get(`/api/fetchQuestion?after=${after}`);
+    setLoading(false);
+    setQuestions(res.data.question)
+    console.log(res);
+  }
+
+  useEffect(() => {
+    if (!after) return; 
+
+    fetchQuestions();
+
+    
+    const handleScroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - 300
+      ) {
+        fetchQuestions();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [after]);
+
   return (
-    <div className="bg-black text-white border-b border-gray-800 p-4">
-      {/* Tags */}
-      <div className="flex gap-2 mb-2 flex-wrap">
-        <span className="bg-orange-500 text-xs px-2 py-0.5 rounded">{title}</span>
-        <span className="bg-orange-500 text-xs px-2 py-0.5 rounded">{subTitle}</span>
-      </div>
-
-      {/* Title */}
-      <h2 className="text-lg font-semibold">Question Title Here</h2>
-      <p className="text-gray-400 text-sm mt-1">
-        The sun dipped behind the quiet hills as a cool breeze rustled through the leaves...
-      </p>
-
-      {/* Actions */}
-      <div className="flex flex-wrap justify-between items-center mt-3 text-gray-400 text-xs gap-2">
-        <div className="flex gap-4">
-          <button className="flex items-center gap-1 hover:text-white">
-          </button>
-            <ArrowBigUp size={18} />
-            <span>12</span>
-            <ArrowBigDown size={18} />
-          <button className="flex items-center gap-1 hover:text-white">
-            <MessageSquare size={14} /> 230
-          </button>
-          <button className="flex items-center gap-1 hover:text-white">
-            <Share2 size={14} /> Share
-          </button>
+    <div className="max-w-2xl mx-auto p-4">
+      {questions.map((q) => (
+        <div key={q._id} className="border-b py-4">
+          <h2 className="text-xl font-bold">{q.title}</h2>
+          <p>{q.description}</p>
         </div>
-        <div>
-          <span>aryan26</span> • <span>863</span> • asked Aug 11 11:25
-        </div>
-      </div>
+      ))}
+      {loading && <p className="text-center">Loading...</p>}
     </div>
-   
   );
 }

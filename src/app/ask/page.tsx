@@ -13,8 +13,8 @@ interface AskQuestionProps {
     title: string;
     description: string;
     tags: string[];
-    images: File[];        // Raw files
-    uploadedUrls: string[]; // ✅ Uploaded image URLs
+    images: File[];        
+    uploadedUrls: string[]; 
   }) => void;
 }
 

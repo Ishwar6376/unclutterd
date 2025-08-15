@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import { useState,useEffect } from "react";
-import { Book, Bell } from "lucide-react";
-import GlareHover from "@/components/uiComponent/glareHover/page";
 import { useAuth0 } from "@auth0/auth0-react";
 import Header from "@/app/component/home/header"
 import Sidebar from "@/app/component/home/sidebar"
@@ -20,14 +18,6 @@ export default  function Home() {
     };
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const getData = async () => {
-      console.log("calling api");
-      const res=await axios.get("/api/home");
-      console.log(res);
-    }
-    useEffect(() => {
-      getData();
-    }, []);
   return (
     <div className="h-screen flex flex-col">
       <Header onMenuClick={() => setIsSidebarOpen(true)} />

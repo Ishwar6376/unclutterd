@@ -9,13 +9,9 @@ interface CreateUserBody {
 }
 
 export async function POST(req: Request) {
-  console.log("API route hit");
   try {
     await connectDB();
-    console.log(" DB connected");
     const body: CreateUserBody = await req.json();
-    console.log("Request body:", body);
-
     if (!body.email || !body.username) {
       return NextResponse.json(
         { error: "Email and Username are required" },

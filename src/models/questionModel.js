@@ -1,13 +1,16 @@
+import { timeStamp } from "console";
 import mongoose from "mongoose";
 
 const questionSchema = new mongoose.Schema({
-  title: { type: String, required: true, trim: true },
-  image:{type:String},
-  body: { type: String, required: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  title: { type: String, required: true, trim: true },
+  description: { type: String, required: true },
+  image:{type:[String],default:[]},
   tags: [{ type: String }],
+  isAnswered: { type: Boolean, default: false },
   votes: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now }
-});
+}
+,{ timestamps: true }
+);
 
-export default mongoose.model("Question", questionSchema);
+export default mongoose.models.Question || mongoose.model("Question", questionSchema);
