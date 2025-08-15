@@ -8,5 +8,9 @@ interface UserState {
 
 export const useUserStore = create<UserState>((set) => ({
   user: null,
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    console.log(user, "User created in zustand");
+    set({ user });
+  },
 }));
+

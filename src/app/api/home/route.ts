@@ -1,4 +1,4 @@
-import {connectDB} from "@/db/dbConfig"
+import connectDB from "@/db/dbConfig"
 import { NextResponse } from "next/server";
 export async function GET(){
   await connectDB();

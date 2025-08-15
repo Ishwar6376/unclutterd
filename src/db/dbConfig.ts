@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 let isConnected=false;
-export const connectDB = async () => {
+const connectDB = async () => {
     if(isConnected) return;
     try {
         await mongoose.connect(process.env.MONGODB_URL!);
@@ -16,3 +16,4 @@ export const connectDB = async () => {
         console.error("Error connecting to MongoDB:", error);
     }
 };
+export default connectDB
