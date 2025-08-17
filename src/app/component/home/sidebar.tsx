@@ -143,6 +143,52 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
   return (
     <>
+      <style jsx>{`
+        /* Reddit-style scrollbar */
+        .reddit-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #4a4a4a #1a1a1a;
+        }
+        
+        .reddit-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .reddit-scrollbar::-webkit-scrollbar-track {
+          background: #1a1a1a;
+          border-radius: 4px;
+        }
+        
+        .reddit-scrollbar::-webkit-scrollbar-thumb {
+          background: #4a4a4a;
+          border-radius: 4px;
+          transition: background-color 0.2s ease;
+        }
+        
+        .reddit-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #5a5a5a;
+        }
+        
+        .reddit-scrollbar::-webkit-scrollbar-thumb:active {
+          background: #6a6a6a;
+        }
+        
+        /* Hide scrollbar when collapsed */
+        .reddit-scrollbar.collapsed {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        
+        .reddit-scrollbar.collapsed::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Smooth scroll behavior */
+        .smooth-scroll {
+          scroll-behavior: smooth;
+        }
+      `}</style>
+
       {/* Mobile Overlay with blur effect - only show when sidebar is expanded on mobile */}
       {isMobile && !isCollapsed && (
         <div 
@@ -180,276 +226,254 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
       {/* Sidebar */}
       <aside
-        className={`bg-black text-white border-r border-gray-800 flex flex-col justify-between h-full top-0 left-0 z-50 transition-all duration-300 ${
+        className={`bg-black text-white border-r border-gray-800 flex flex-col h-full top-0 left-0 z-50 transition-all duration-300 ${
           // Mobile: fixed when expanded (overlay), static when collapsed (icons only)
           // Desktop: always static
           isMobile ? (isCollapsed ? "static" : "fixed") : "static"
         } ${
           // Width: collapsed = w-16 (icons), expanded = w-60 (full)
           isCollapsed ? "w-16" : "w-60"
+        } ${
+          // Add scrollbar classes
+          `reddit-scrollbar smooth-scroll ${isCollapsed ? 'collapsed' : ''}`
         }`}
+        style={{
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          maxHeight: '100vh'
+        }}
       >
+        {/* Scrollable Content Container */}
+        <div className="flex flex-col justify-between h-full min-h-0">
 
-
-        <div className={isCollapsed ? "p-2" : "p-4"}>
-          {/* User Info - Full */}
-          {!isCollapsed && (
-            <div className="flex flex-col items-center gap-3 mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
-                  <img src={user?.picture} alt="profile" className="w-10 h-10 rounded-full object-cover" />
-                </div>
-                <p className="font-bold text-sm">{userName}</p>
-              </div>
-              <div className="w-full h-[1px] bg-gray-500"></div>
-            </div>
-          )}
-
-          {/* User Info - Collapsed (Icons only) */}
-          {isCollapsed && (
-            <div className="flex flex-col items-center mb-6">
-              <div 
-                className="relative w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center"
-                onMouseEnter={() => handleTooltipShow('profile')}
-                onMouseLeave={handleTooltipHide}
-              >
-                <img src={user?.picture} alt="profile" className="w-10 h-10 rounded-full object-cover" />
-                {showTooltip === 'profile' && !isMobile && (
-                  <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                    {userName}
-                    <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                  </div>
-                )}
-              </div>
-              <div className="w-full h-[1px] bg-gray-500 mt-3"></div>
-            </div>
-          )}
-
-          {/* Menu */}
-          <nav className="space-y-2 flex flex-col">
-            {/* Main Section Header */}
-            {!isCollapsed && (
-              <div className="w-full bg-black px-1 py-0.25 pb-4">
-                <p className="text-gray-400 text-xs tracking-wider font-semibold">
-                  Main
-                </p>
-              </div>
-            )}
-
-            {/* Dashboard */}
-            <div className="relative">
-              <a 
-                className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
-                  isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
-                }`}
-                href="#"
-                onMouseEnter={() => handleTooltipShow('dashboard')}
-                onMouseLeave={handleTooltipHide}
-              >
-                <LayoutDashboard size={18} />
-                {!isCollapsed && <span>Dashboard</span>}
-              </a>
-              {isCollapsed && showTooltip === 'dashboard' && !isMobile && (
-                <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                  Dashboard
-                  <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+          {/* Scrollable Navigation Area */}
+          <div className={`${isCollapsed ? "px-2" : "px-4"} flex-1 min-h-0 overflow-y-auto`}>
+            {/* Menu */}
+            <nav className="space-y-2 flex flex-col">
+              {/* Main Section Header */}
+              {!isCollapsed && (
+                <div className="w-full bg-black px-1 py-0.25 pb-4 pt-4">
+                  <p className="text-gray-400 text-xs tracking-wider font-semibold">
+                    Main
+                  </p>
                 </div>
               )}
-            </div>
 
-            {/* Communities */}
-            <div className="relative">
-              <a 
-                className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
-                  isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
-                }`}
-                href="#"
-                onMouseEnter={() => handleTooltipShow('communities')}
-                onMouseLeave={handleTooltipHide}
-              >
-                <Users size={18} />
-                {!isCollapsed && <span>Communities</span>}
-              </a>
-              {isCollapsed && showTooltip === 'communities' && !isMobile && (
-                <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                  Communities
-                  <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Answers */}
-            <div className="relative">
-              <a 
-                className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
-                  isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
-                }`}
-                href="#"
-                onMouseEnter={() => handleTooltipShow('answers')}
-                onMouseLeave={handleTooltipHide}
-              >
-                <BookOpenCheck size={18} />
-                {!isCollapsed && <span>Answers</span>}
-              </a>
-              {isCollapsed && showTooltip === 'answers' && !isMobile && (
-                <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                  Answers
-                  <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                </div>
-              )}
-            </div>
-
-            <div className="w-full h-[1px] bg-gray-500 my-4"></div>
-
-            {/* Favorites Section - Full */}
-            {!isCollapsed && (
-              <div>
-                <p className="text-gray-400 text-xs tracking-wider font-semibold pb-4">
-                  Favorites
-                </p>
-
-                {/* Collapsible list */}
-                <div className="mt-1">
-                  {/* Toggle button */}
-                  <button onClick={() => {
-                    if (open) {
-                      // reset active when closing
-                      setActive(null);
-                    }
-                    setOpen(!open);
-                  }}
-                    className="flex items-center justify-between w-full hover:text-orange-500 px-2.5 py-2 rounded-md transition-colors"
-                  >
-                    {/* Left part: icon + text */}
-                    <span className="flex items-center gap-2 pl-1">
-                      <BookHeart size={18} className="opacity-80" />
-                      <span className="font-medium">Subjects</span>
-                    </span>
-                    {/* Right arrow */}
-                    <ChevronRight className={`h-4 w-4 transform transition-transform duration-300 ${open ? "rotate-90" : ""}`}/>
-                  </button>
-
-                  {/* Collapsible subject list */}
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-                    <ul className="ml-4 mt-2 space-y-1">
-                      {subjects.map((subject, idx) => (
-                        <li key={subject.name} className={`transform transition-all duration-500 ${open? "translate-x-0 opacity-100 delay-" + idx * 100: "-translate-x-2 opacity-0"}`}>
-                          <button onClick={() => setActive(subject.name)} className={`flex w-full items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium   transition-all${active === subject.name? " bg-zinc-800 text-orange-400 shadow-md shadow-black/30": " hover:bg-zinc-800/70 hover:text-orange-400"}`}>
-                            <subject.icon size={16} className="opacity-80" />
-                            <span>{subject.name}</span>
-                          </button>
-                       </li>
-                     ))}
-                   </ul>
-                 </div>
-               </div>
-              </div>
-            )}
-
-            {/* Favorites Section - Collapsed (Icons) */}
-            {isCollapsed && (
+              {/* Dashboard */}
               <div className="relative">
-                <div 
-                  className="flex justify-center py-3 px-2 hover:text-orange-500 transition-colors cursor-pointer"
-                  onMouseEnter={() => handleTooltipShow('subjects')}
+                <a 
+                  className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
+                    isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
+                  }`}
+                  href="#"
+                  onMouseEnter={() => handleTooltipShow('dashboard')}
                   onMouseLeave={handleTooltipHide}
                 >
-                  <BookHeart size={18} className="opacity-80" />
-                </div>
-                {showTooltip === 'subjects' && !isMobile && (
+                  <LayoutDashboard size={18} />
+                  {!isCollapsed && <span>Dashboard</span>}
+                </a>
+                {isCollapsed && showTooltip === 'dashboard' && !isMobile && (
                   <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                    Subjects
+                    Dashboard
                     <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
                   </div>
                 )}
               </div>
-            )}
 
-            <div className="w-full h-[1px] bg-gray-500 my-4"></div>
-
-            {/* Settings Section Header */}
-            {!isCollapsed && (
-              <div>
-                <p className="text-gray-400 text-xs tracking-wider font-semibold pb-4">
-                  Settings
-                </p>
+              {/* Communities */}
+              <div className="relative">
+                <a 
+                  className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
+                    isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
+                  }`}
+                  href="#"
+                  onMouseEnter={() => handleTooltipShow('communities')}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <Users size={18} />
+                  {!isCollapsed && <span>Communities</span>}
+                </a>
+                {isCollapsed && showTooltip === 'communities' && !isMobile && (
+                  <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
+                    Communities
+                    <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Settings */}
+              {/* Answers */}
+              <div className="relative">
+                <a 
+                  className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
+                    isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
+                  }`}
+                  href="#"
+                  onMouseEnter={() => handleTooltipShow('answers')}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <BookOpenCheck size={18} />
+                  {!isCollapsed && <span>Answers</span>}
+                </a>
+                {isCollapsed && showTooltip === 'answers' && !isMobile && (
+                  <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
+                    Answers
+                    <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                  </div>
+                )}
+              </div>
+
+              <div className="w-full h-[1px] bg-gray-500 my-4"></div>
+
+              {/* Favorites Section - Full */}
+              {!isCollapsed && (
+                <div>
+                  <p className="text-gray-400 text-xs tracking-wider font-semibold pb-4">
+                    Favorites
+                  </p>
+
+                  {/* Collapsible list */}
+                  <div className="mt-1">
+                    {/* Toggle button */}
+                    <button onClick={() => {
+                      if (open) {
+                        // reset active when closing
+                        setActive(null);
+                      }
+                      setOpen(!open);
+                    }}
+                      className="flex items-center justify-between w-full hover:text-orange-500 px-2.5 py-2 rounded-md transition-colors"
+                    >
+                      {/* Left part: icon + text */}
+                      <span className="flex items-center gap-2 pl-1">
+                        <BookHeart size={18} className="opacity-80" />
+                        <span className="font-medium">Subjects</span>
+                      </span>
+                      {/* Right arrow */}
+                      <ChevronRight className={`h-4 w-4 transform transition-transform duration-300 ${open ? "rotate-90" : ""}`}/>
+                    </button>
+
+                    {/* Collapsible subject list */}
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                      <ul className="ml-4 mt-2 space-y-1">
+                        {subjects.map((subject, idx) => (
+                          <li key={subject.name} className={`transform transition-all duration-500 ${open? "translate-x-0 opacity-100 delay-" + idx * 100: "-translate-x-2 opacity-0"}`}>
+                            <button onClick={() => setActive(subject.name)} className={`flex w-full items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium   transition-all${active === subject.name? " bg-zinc-800 text-orange-400 shadow-md shadow-black/30": " hover:bg-zinc-800/70 hover:text-orange-400"}`}>
+                              <subject.icon size={16} className="opacity-80" />
+                              <span>{subject.name}</span>
+                            </button>
+                         </li>
+                       ))}
+                     </ul>
+                   </div>
+                 </div>
+                </div>
+              )}
+
+              {/* Favorites Section - Collapsed (Icons) */}
+              {isCollapsed && (
+                <div className="relative">
+                  <div 
+                    className="flex justify-center py-3 px-2 hover:text-orange-500 transition-colors cursor-pointer"
+                    onMouseEnter={() => handleTooltipShow('subjects')}
+                    onMouseLeave={handleTooltipHide}
+                  >
+                    <BookHeart size={18} className="opacity-80" />
+                  </div>
+                  {showTooltip === 'subjects' && !isMobile && (
+                    <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
+                      Subjects
+                      <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="w-full h-[1px] bg-gray-500 my-4"></div>
+
+              {/* Settings Section Header */}
+              {!isCollapsed && (
+                <div>
+                  <p className="text-gray-400 text-xs tracking-wider font-semibold pb-4">
+                    Settings
+                  </p>
+                </div>
+              )}
+
+              {/* Settings */}
+              <div className="relative">
+                <a 
+                  className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
+                    isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
+                  }`}
+                  href="#"
+                  onMouseEnter={() => handleTooltipShow('settings')}
+                  onMouseLeave={handleTooltipHide}
+                >
+                  <SettingsIcon size={18} />
+                  {!isCollapsed && <span>Settings</span>}
+                </a>
+                {isCollapsed && showTooltip === 'settings' && !isMobile && (
+                  <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
+                    Settings
+                    <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                  </div>
+                )}
+              </div>
+            </nav>
+          </div>
+
+          {/* Footer Links - Fixed at bottom */}
+          <div className={`${isCollapsed ? "p-2" : "p-4"} flex-shrink-0 border-t border-gray-800 mt-4`}>
+            {/* Help */}
             <div className="relative">
-              <a 
-                className={`flex items-center gap-2 hover:text-orange-500 transition-colors ${
-                  isCollapsed ? "justify-center py-3 px-2" : "px-2.5 py-2"
-                }`}
+              <a
                 href="#"
-                onMouseEnter={() => handleTooltipShow('settings')}
+                className={`flex items-center gap-2 text-gray-400 hover:text-white transition-colors ${
+                  isCollapsed ? "justify-center py-2" : ""
+                }`}
+                onMouseEnter={() => handleTooltipShow('help')}
                 onMouseLeave={handleTooltipHide}
               >
-                <SettingsIcon size={18} />
-                {!isCollapsed && <span>Settings</span>}
+                <HelpCircle size={18} />
+                {!isCollapsed && <span>Help</span>}
               </a>
-              {isCollapsed && showTooltip === 'settings' && !isMobile && (
+              {isCollapsed && showTooltip === 'help' && !isMobile && (
                 <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                  Settings
+                  Help
                   <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
                 </div>
               )}
             </div>
-          </nav>
-        </div>
-
-        {/* Footer Links */}
-        <div className={isCollapsed ? "p-2" : "p-4"}>
-          {/* Help */}
-          <div className="relative">
-            <a
-              href="#"
-              className={`flex items-center gap-2 text-gray-400 hover:text-white transition-colors ${
-                isCollapsed ? "justify-center py-2" : ""
-              }`}
-              onMouseEnter={() => handleTooltipShow('help')}
-              onMouseLeave={handleTooltipHide}
-            >
-              <HelpCircle size={18} />
-              {!isCollapsed && <span>Help</span>}
-            </a>
-            {isCollapsed && showTooltip === 'help' && !isMobile && (
-              <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                Help
-                <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-              </div>
-            )}
-          </div>
-          
-          {/* Logout */}
-          <div className="relative">
-            <button 
-              className={`flex items-center gap-2 text-red-500 mt-2 hover:cursor-pointer transition-colors hover:text-red-400 ${
-                isCollapsed ? "justify-center py-2" : ""
-              }`}
-              onClick={() =>
-                logout({
-                  logoutParams: {
-                    returnTo: window.location.origin||"/",
-                  },
-                })
-              }
-              onMouseEnter={() => handleTooltipShow('logout')}
-              onMouseLeave={handleTooltipHide}
-            >
-              <LogOut size={18} />
-              {!isCollapsed && <span>Logout</span>}
-            </button>
-            {isCollapsed && showTooltip === 'logout' && !isMobile && (
-              <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
-                Logout
-                <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-              </div>
-            )}
+            
+            {/* Logout */}
+            <div className="relative">
+              <button 
+                className={`flex items-center gap-2 text-red-500 mt-2 hover:cursor-pointer transition-colors hover:text-red-400 ${
+                  isCollapsed ? "justify-center py-2" : ""
+                }`}
+                onClick={() =>
+                  logout({
+                    logoutParams: {
+                      returnTo: window.location.origin||"/",
+                    },
+                  })
+                }
+                onMouseEnter={() => handleTooltipShow('logout')}
+                onMouseLeave={handleTooltipHide}
+              >
+                <LogOut size={18} />
+                {!isCollapsed && <span>Logout</span>}
+              </button>
+              {isCollapsed && showTooltip === 'logout' && !isMobile && (
+                <div className="absolute left-14 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap z-10 shadow-lg">
+                  Logout
+                  <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </aside>
     </>
   );
-}
+}``
