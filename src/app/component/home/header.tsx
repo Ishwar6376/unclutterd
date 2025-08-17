@@ -17,9 +17,7 @@ export default function Header({ onMenuClick }:any) {
       {/* Left - Logo + Menu */}
       <div className="flex items-center gap-5">
         {/* Mobile Menu */}
-        <button className="md:hidden hover:cursor-pointer" onClick={onMenuClick}>
-          <Menu />
-        </button>
+        
 
         <h1 className="flex text-white font-bold text-lg"><Book color="#f97316" /> Uncluttered</h1>
       </div>
