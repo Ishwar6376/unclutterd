@@ -2,6 +2,7 @@
 import { Sun, Bell, User, Search, Menu } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Book } from "lucide-react";
 
 
 export default function Header({ onMenuClick }:any) {
@@ -14,13 +15,13 @@ export default function Header({ onMenuClick }:any) {
   return (
     <header className="flex items-center justify-between bg-black text-white px-4 py-2 border-b border-gray-800">
       {/* Left - Logo + Menu */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-5">
         {/* Mobile Menu */}
         <button className="md:hidden hover:cursor-pointer" onClick={onMenuClick}>
           <Menu />
         </button>
 
-        <h1 className="text-orange-500 font-bold text-lg">Uncluttered</h1>
+        <h1 className="flex text-white font-bold text-lg"><Book color="#f97316" /> Uncluttered</h1>
       </div>
 
       {/* Search */}
