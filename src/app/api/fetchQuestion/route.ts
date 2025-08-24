@@ -1,34 +1,30 @@
-import  connectDB  from "@/db/dbConfig";
+import connectDB from "@/db/dbConfig";
 import Question from "@/models/questionModel";
-import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
-
-const LIMIT = 50;
-
 export async function GET(req: Request) {
-  try {
-    await connectDB();
-    console.log("Question Fetch url hitted")
-    const { searchParams } = new URL(req.url);
-    const after = searchParams.get("after");
-    console.log("After",after)
-    let filter = {};
-    if (after) {
-      filter = { _id: { $lt: new mongoose.Types.ObjectId(after) } };
-    }
+  await connectDB();
 
-    const questions = await Question.find(filter)
-      .sort({ _id: -1 })
-      .limit(LIMIT);
+  const { searchParams } = new URL(req.url);
+  const after = searchParams.get("after");
+  const limit = parseInt(searchParams.get("limit") || "20");
 
-
-    console.log("questions", questions);  
-    return NextResponse.json({
-      question:questions,
-      nextAfter: questions.length ? questions[questions.length - 1]._id : null,
-    });
-  } catch (err:any) {
-    return Response.json({ message: "Error fetching questions", error: err.message }, { status: 500 });
+  const query: any = {};
+  if (after) {
+    query._id = { $lt: after }; // only older posts
   }
+
+  const questions = await Question.find(query)
+    .sort({ _id: -1 }) // newest first
+    .limit(limit);
+
+  // Find the next cursor
+  const nextCursor =
+    questions.length > 0 ? questions[questions.length - 1]._id : null;
+
+  return NextResponse.json({
+    data: questions,
+    nextCursor,
+    hasMore: questions.length === limit,
+  });
 }

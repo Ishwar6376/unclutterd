@@ -28,7 +28,6 @@ export default function AskQuestionPage({ availableTags, onSubmit }: AskQuestion
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]); 
   const [loading, setLoading] = useState(false);
   const User=useUserStore().user;
-  console.log(User)
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
