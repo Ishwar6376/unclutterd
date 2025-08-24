@@ -50,7 +50,7 @@ export default function Home() {
                   Uncluttered
             </h1>
             
-            <div className="space-x-3 sm:space-x-4">
+            <div className="space-x-3 sm:space-x-4 flex ">
               <button className="px-4 py-2 bg-white hover:bg-gray-200 rounded-full transition hover:cursor-pointer" onClick={handleLogin}>
                 <span className="bg-gradient-to-br from-orange-500 to-red-500 bg-clip-text text-transparent font-medium">Login</span>
               </button>

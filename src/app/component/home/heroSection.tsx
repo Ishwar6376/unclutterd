@@ -51,9 +51,9 @@ export default function MainContent() {
   }, []);
 
   return (
-    <main className="bg-black text-white p-4 md:p-6">
+    <main className="bg-black w-full text-white p-4 md:p-6 ">
       <MainHeader />
-      <div ref={scrollRef} className="overflow-auto h-[80vh] ">
+      <div ref={scrollRef} className="overflow-auto h-[80vh] scrollbar-hide">
         {questions.map((q: any) => (
           <QuestionCard
             key={q._id}
