@@ -45,7 +45,7 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col">
+    <div className="h-screen w-full flex flex-col pt-16 ">
       <Header onMenuClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 

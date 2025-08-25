@@ -226,7 +226,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
       {/* Sidebar */}
       <aside
-        className={`bg-black text-white border-r border-gray-800 flex flex-col h-full top-0 left-0 z-50 transition-all duration-300 ${
+        className={`bg-black text-white border-r border-gray-800 flex flex-col h-full top-0 left-0 z-50 transition-all duration-300  fixed ${
           // Mobile: fixed when expanded (overlay), static when collapsed (icons only)
           // Desktop: always static
           isMobile ? (isCollapsed ? "static" : "fixed") : "static"

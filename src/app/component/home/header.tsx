@@ -18,19 +18,12 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const [isDark, setIsDark] = useState(true);
 
   return (
-    <header className="sticky top-0 z-50 bg-gray-900 border-b border-gray-700 shadow-lg">
+    <header className=" w-full fixed top-0 z-100 bg-gray-900 border-b border-gray-700 shadow-lg ">
       <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-2 max-w-full">
         {/* Left Section - Logo + Menu */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-shrink-0">
           {/* Mobile Menu */}
-          {onMenuClick && (
-            <button 
-              onClick={onMenuClick}
-              className="lg:hidden p-2 hover:bg-gray-800 rounded-full transition-colors"
-            >
-              <Menu size={20} className="text-gray-300" />
-            </button>
-          )}
+          
 
           {/* Logo */}
           <div className="flex items-center gap-2">
