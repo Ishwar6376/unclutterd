@@ -58,7 +58,7 @@ export default function MainContent() {
 
   return (
     <main className="bg-black w-full text-white p-4 md:p-6 ">
-      <div className="flex h-[90vh]">
+      <div className="flex h-[85vh]">
         <div ref={scrollRef}
         className={`overflow-auto scrollbar-hide transition-all duration-300 ${
           selectedQuestionId?"w-2/3":"w-full"
