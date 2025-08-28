@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import MainHeader from "./heroHeader";
 import QuestionCard from "@/components/questionCard";
+import Comment from "@/components/comment/page";
 
 export default function MainContent() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -9,9 +10,14 @@ export default function MainContent() {
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [quesLimit, setLimit] = useState(15);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
+
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
+  const handleCommentClick = (id: string) => {
+  
+  setSelectedQuestionId(prev=>(prev==id?null:id));
+};
   const fetchQuestions = async () => {
     if (!hasMore || loading) return;
 
@@ -52,21 +58,38 @@ export default function MainContent() {
 
   return (
     <main className="bg-black w-full text-white p-4 md:p-6 ">
-      <MainHeader />
-      <div ref={scrollRef} className="overflow-auto h-[80vh] scrollbar-hide">
+      <MainHeader  />
+      <div className="flex h-[80vh]">
+        <div ref={scrollRef}
+        className={`overflow-auto scrollbar-hide transition-all duration-300 ${
+          selectedQuestionId?"w-2/3":"w-full"
+        }`}
+        >
         {questions.map((q: any) => (
           <QuestionCard
             key={q._id}
             title={q.title}
+            id={q._id}
             description={q.description}
             images={q.image}
             votes={q.votes}
+            comments={q.comments}
+            onCommentClick={handleCommentClick}
+
           />
         ))}
         
         {loading && <p>Loading...</p>}
         {!hasMore && <p>No more questions</p>}
+        </div>
+        {selectedQuestionId && 
+        (
+        <div className=" bg-amber-200">
+          <Comment questionId={selectedQuestionId}/>
+        </div>
+        )}
       </div>
+      
     </main>
   );
 }
