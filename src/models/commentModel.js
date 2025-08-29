@@ -1,11 +1,33 @@
 import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema({
-  parentType: { type: String, enum: ["Question", "Answer", "Comment"], required: true },
-  parentId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  body: { type: String, required: true },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  createdAt: { type: Date, default: Date.now }
-});
+const commentSchema = new mongoose.Schema(
+  {
+    questionId:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Question",
+      required:true
 
-export default mongoose.model("Comment", commentSchema);
+    },
+    parentId:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Comment",
+      required:true
+    },
+    author:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User",
+      required:true
+    },
+    votes:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"Vote"
+    },
+    body:{
+      type:String,
+      trim:true,
+      required:true,
+    }
+
+,},{timestamps:true});
+
+export default mongoose.models.Comment||mongoose.model("Comment", commentSchema);

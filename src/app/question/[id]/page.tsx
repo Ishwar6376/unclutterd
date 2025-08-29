@@ -7,23 +7,33 @@ import Sidebar from "@/app/component/home/sidebar";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import QuestionCard from "@/components/questionCard";
+export interface Comment {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: Date;
+  votes?: number;
+  replies?: Comment[];
+}
+
 export interface Question {
-  _id: string;                // MongoDB ObjectId as string
+  _id: string;
   title: string;
   description: string;
-  author: string;             // user _id
+  author: string; // user _id
   votes: number;
   isAnswered: boolean;
   tags: string[];
-  image: string[];            // URLs or base64
-  createdAt: string;          // ISO date string
-  updatedAt: string;          // ISO date string
-  __v: number;                // Mongoose version key
+  image: string[];
+  comments?: Comment[];
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  __v: number;
 }
 
 
 export default function Searchpage() {
-  const [que, setQue] = useState<Question>({
+const [que, setQue] = useState<Question>({
   _id: "",
   title: "",
   description: "",
@@ -32,10 +42,12 @@ export default function Searchpage() {
   isAnswered: false,
   tags: [],
   image: [],
+  comments: [],
   createdAt: "",
   updatedAt: "",
   __v: 0,
 });
+
   const q_id=useParams();
   const id=q_id.id
   const fetchQuestion=async()=>{
@@ -90,12 +102,17 @@ export default function Searchpage() {
         
         {/* {searched q will be here} */}
         <div className="w-3/4 flex-1 transition-all duration-300 min-w-0">
-         <QuestionCard
+        <QuestionCard
+          id={que._id}
           title={que.title}
           description={que.description}
           images={que.image}
           votes={que.votes}
-          />
+          comments={que.comments ?? []}
+          onCommentClick={(id) => console.log("Clicked comment", id)}
+        />
+
+
         </div>
       </div>
     </div>

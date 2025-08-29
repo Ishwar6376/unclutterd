@@ -1,19 +1,39 @@
 "use client";
 import { useRef, useState } from "react";
-import { ArrowBigUp, ArrowBigDown, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { MessageCircle, ArrowBigUp, ArrowBigDown, ChevronLeft, ChevronRight, X } from "lucide-react";
+
+type Comment = {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: Date;
+  votes?: number;
+  replies?: Comment[];
+};
 
 type Props = {
+  id: string;
   title: string;
   description: string;
   images?: string[];
   votes?: number;
+  onCommentClick: (id: string) => void;
+  comments?: Comment[];
 };
 
-export default function QuestionCard({ title, description, images = [], votes = 0 }: Props) {
+export default function QuestionCard({
+  id,
+  title,
+  description,
+  images = [],
+  votes = 0,
+  comments = [],
+  onCommentClick,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
 
-  // Scroll function
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({
@@ -25,8 +45,8 @@ export default function QuestionCard({ title, description, images = [], votes = 
 
   return (
     <>
-      <article className=" rounded-2xl p-5 mb-4 shadow-md border border-gray-800 
-                          hover:shadow-lg hover:border-orange-500 transition-all duration-300 w-full ">
+      <article className="rounded-2xl p-5 mb-4 shadow-md border border-gray-800 
+                          hover:shadow-lg hover:border-orange-500 transition-all duration-300 w-full">
         {/* Title */}
         <h3 className="font-semibold text-lg text-orange-400">{title}</h3>
 
@@ -34,7 +54,7 @@ export default function QuestionCard({ title, description, images = [], votes = 
         {description && <p className="text-sm mt-2 text-gray-300 leading-relaxed">{description}</p>}
 
         {/* Images */}
-        {images.length > 0 && (
+        {images && images.length > 0 && (
           <div className="relative mt-4">
             {/* Scroll Buttons */}
             <button
@@ -50,28 +70,45 @@ export default function QuestionCard({ title, description, images = [], votes = 
               <ChevronRight />
             </button>
 
-            <div
-              ref={scrollRef}
-              className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth"
-            >
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth">
               {images.map((image, idx) => (
                 <img
                   key={idx}
                   src={image}
                   alt={`Image ${idx}`}
                   onClick={() => setSelectedImage(image)}
-                  className="w-100 h-100 object-cover rounded cursor-pointer "
+                  className="w-100 h-100 object-cover rounded cursor-pointer"
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* Votes */}
-        <div className="text-xs mt-3 text-gray-400 flex items-center gap-2">
-          <ArrowBigUp className="cursor-pointer hover:text-orange-400" />
-          <span className="text-white font-medium">{votes}</span>
-          <ArrowBigDown className="cursor-pointer hover:text-orange-400" />
+        {/* Votes + Comments */}
+        <div className="text-xs mt-3 text-gray-400 flex items-center gap-3">
+          {/* Upvote/Downvote */}
+          <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-full">
+            <ArrowBigUp
+              onClick={() => setVote(vote === "up" ? null : "up")}
+              className={`w-5 h-5 cursor-pointer transition 
+                ${vote === "up" ? "text-orange-500" : "text-gray-300 hover:text-orange-400"}`}
+            />
+            <span className="text-white font-medium">{votes}</span>
+            <ArrowBigDown
+              onClick={() => setVote(vote === "down" ? null : "down")}
+              className={`w-5 h-5 cursor-pointer transition 
+                ${vote === "down" ? "text-purple-500" : "text-gray-300 hover:text-purple-400"}`}
+            />
+          </div>
+
+          {/* Comments */}
+          <div
+            className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-full cursor-pointer hover:bg-gray-700 transition"
+            onClick={() => onCommentClick(id)}
+          >
+            <MessageCircle className="w-5 h-5 text-gray-300" />
+            <span className="text-white font-medium">{comments?.length ?? 0}</span>
+          </div>
         </div>
       </article>
 
@@ -88,7 +125,7 @@ export default function QuestionCard({ title, description, images = [], votes = 
             <img
               src={selectedImage}
               alt="Enlarged"
-              className=" w-[800px] h-[800px] rounded-xl shadow-lg sm:w-[400px] sm:h-[400px] "
+              className="w-[800px] h-[800px] rounded-xl shadow-lg sm:w-[400px] sm:h-[400px]"
             />
           </div>
         </div>
