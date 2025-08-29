@@ -1,7 +1,6 @@
 import React from "react";
 import { Question } from "@/components/type";
 import AnswerComponent from "@/components/answer/page";
-import CommentList from "@/components/comment/page";
 
 interface QuestionProps {
   question: Question;
@@ -23,12 +22,6 @@ export default function QuestionComponent({ question }: QuestionProps) {
           </span>
         ))}
       </div>
-
-      <CommentList
-        parentType="Question"
-        parentId={question.id}
-        comments={question.comments}
-      />
 
       <div className="mt-6">
         <h2 className="text-lg font-semibold">Answers</h2>

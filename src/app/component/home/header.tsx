@@ -1,21 +1,57 @@
-'use client';
-import { Sun, Bell, User, Search, Menu, Plus, MessageSquare, Home, TrendingUp, ChevronDown, Moon } from "lucide-react";
-import { useState } from "react";
+"use client";
+import {
+  Sun,
+  Bell,
+  User,
+  Search,
+  Menu,
+  Plus,
+  MessageSquare,
+  Home,
+  TrendingUp,
+  ChevronDown,
+  Moon,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Book } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
+import axios from "axios";
+export interface Question {
+  _id: string;
+  author: string;
+  title: string;
+  description: string;
+  image: string[]; // assuming array of URLs
+  tags?: string[]; // optional if you store tags
+  createdAt?: string; // optional if you track time
+}
 
 export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const router = useRouter();
-  const user=useUserStore((state)=>state.user);
-  const username=user?.name
-  const userpicture=user?.picture
+  const user = useUserStore((state) => state.user);
+  const username = user?.name;
+  const userpicture = user?.picture;
   const handleProfileClick = () => {
     router.push("/profile");
-  }
+  };
   const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const [search, setSearch] = useState("");
+  const [searchRes, setSearchRes] = useState<Question[]>([]);
+  const searchQuestion = async () => {
+    if (!search || search.trim() === "") {
+      return;
+    }
+    console.log(search)
+    const res = await axios.post("/api/getSearch", { search });
+    setSearchRes(res.data);
+    console.log(res);
+  };
+  useEffect(() => {
+    searchQuestion();
+  }, [search]);
 
   return (
     <header className=" w-full fixed top-0 z-100 bg-gray-900 border-b border-gray-700 shadow-lg ">
@@ -23,7 +59,6 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         {/* Left Section - Logo + Menu */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-shrink-0">
           {/* Mobile Menu */}
-          
 
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -37,7 +72,8 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* Navigation Pills - Desktop */}
           <div className="hidden lg:flex items-center ml-4 space-x-1">
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-sm font-medium text-white hover:bg-gray-700 transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-full text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+            onClick={()=>{router.push("/home")}}>
               <Home size={16} />
               Home
             </button>
@@ -49,7 +85,9 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         {/* Center - Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-2xl mx-4">
+
+        {/* Mobile Search Button */}
+        <div className="hidden md:flex flex-1 max-w-2xl mx-4 relative">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
@@ -58,17 +96,26 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               type="text"
               placeholder="Search Uncluttered"
               className="block w-full pl-10 pr-3 py-2 border border-gray-600 rounded-full bg-gray-800 text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 hover:bg-gray-750 transition-colors"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
             />
+
+            {/* Search Results Dropdown */}
+            {search && searchRes.length > 0 && (
+              <div className="absolute top-12 left-0 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {searchRes.map((q) => (
+                  <div
+                    key={q._id}
+                    className="p-3 hover:bg-gray-700 cursor-pointer"
+                    onClick={() => router.push(`/question/${q._id}`)} // navigate to full page
+                  >
+                    <h2 className="font-bold text-white">{q.title}</h2>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Mobile Search Button */}
-        <button 
-          className="md:hidden p-2 hover:bg-gray-800 rounded-full transition-colors"
-          onClick={() => setShowSearch(!showSearch)}
-        >
-          <Search size={20} className="text-gray-300" />
-        </button>
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -101,7 +148,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
           </button>
 
           {/* Theme Toggle */}
-          <button 
+          <button
             className="hidden sm:block p-2 hover:bg-gray-800 rounded-full transition-colors"
             onClick={() => setIsDark(!isDark)}
           >
@@ -114,18 +161,27 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* User Menu */}
           <div className="relative">
-            <button 
+            <button
               className="flex items-center gap-2 p-1 pr-2 hover:bg-gray-800 rounded-full transition-colors"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <img src={user?.picture} alt="profile" className="w- h-8 rounded-full object-cover" />
+                <img
+                  src={user?.picture}
+                  alt="profile"
+                  className="w- h-8 rounded-full object-cover"
+                />
               </div>
               <div className="hidden lg:flex flex-col items-start">
-                <span className="text-xs font-medium text-white">{username}</span>
+                <span className="text-xs font-medium text-white">
+                  {username}
+                </span>
                 <span className="text-xs text-gray-400">1,234 karma</span>
               </div>
-              <ChevronDown size={16} className="hidden lg:block text-gray-400" />
+              <ChevronDown
+                size={16}
+                className="hidden lg:block text-gray-400"
+              />
             </button>
 
             {/* User Dropdown */}
@@ -135,7 +191,10 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                   <div className="font-medium text-white">u/username</div>
                   <div className="text-sm text-gray-400">1,234 karma</div>
                 </div>
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm text-gray-200 transition-colors" onClick={handleProfileClick}>
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm text-gray-200 transition-colors"
+                  onClick={handleProfileClick}
+                >
                   <div className="flex items-center gap-3">
                     <User size={16} />
                     Profile
@@ -144,7 +203,7 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 <button className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm text-gray-200 transition-colors">
                   <div className="flex items-center gap-3">
                     {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                    {isDark ? 'Light Mode' : 'Dark Mode'}
+                    {isDark ? "Light Mode" : "Dark Mode"}
                   </div>
                 </button>
                 <button className="w-full text-left px-4 py-2 hover:bg-gray-700 text-sm text-gray-200 transition-colors">
@@ -185,8 +244,8 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
       {/* Click outside to close user menu */}
       {showUserMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowUserMenu(false)}
         ></div>
       )}

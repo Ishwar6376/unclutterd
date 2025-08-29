@@ -34,13 +34,13 @@ export async function POST(req: Request) {
 
     // Find the user by email
     const dbUser = await User.findOne({ email });
-
     if (!dbUser) {
       return NextResponse.json(
         { message: "User not found" },
         { status: 404 }
       );
     }
+    console.log("DB user:", dbUser);
 
     // Create the question
     const newQuestion = await Question.create({
@@ -49,9 +49,9 @@ export async function POST(req: Request) {
       description: body.description,
       image: body.image,
     });
-
-    console.log("New question:", newQuestion);
-
+    
+    dbUser.questions.push(newQuestion._id);
+    await dbUser.save();
     return NextResponse.json(
       { message: "Question uploaded to database", data: newQuestion },
       { status: 201 }

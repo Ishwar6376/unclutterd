@@ -1,10 +1,41 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
-    username: { type: String, required: true, unique: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    avatar: { type: String, default: null },
+    username: {
+      type: String,
+      required: [true, "Username is required"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    questions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Question",
+       
+      },
+    ],
+    answers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Answer",
+        
+      },
+    ],
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Comment",
+        
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -13,21 +13,26 @@ export default function MainContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchQuestions = async () => {
-    if (!hasMore || loading) return;
+  if (!hasMore || loading) return;
 
-    setLoading(true);
-    try {
-      const res = await axios.get("/api/fetchQuestion", {
-        params: { after: nextCursor, limit: quesLimit },
-      });
-      console.log(res.data);
-      setQuestions((prev) => [...prev, ...res.data.data]);
-      setNextCursor(res.data.nextCursor);
-      setHasMore(res.data.hasMore);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const res = await axios.get("/api/fetchQuestion", {
+      params: { after: nextCursor, limit: quesLimit },
+    });
+
+    setQuestions((prev) => {
+      const all = [...prev, ...res.data.data];
+      const unique = Array.from(new Map(all.map(q => [q._id, q])).values());
+      return unique;
+    });
+
+    setNextCursor(res.data.nextCursor);
+    setHasMore(res.data.hasMore);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchQuestions();

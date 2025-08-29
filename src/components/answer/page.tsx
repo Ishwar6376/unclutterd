@@ -1,6 +1,6 @@
 import React from "react";
 import { Answer } from "@/components/type";
-import CommentList from "@/components/comment/page";
+import CommentList from "@/app/comment/page";
 
 interface AnswerProps {
   answer: Answer;
