@@ -1,13 +1,26 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
+const voteSchema=new mongoose.Schema(
+    {
+        userId:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User",
+            required:true,
+        },
+        commentId:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Comment",
+            required:true,
+        },
+        value:{
+            type:Number,
+            enum:[-1,1],
+            required:true,
 
-const voteSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  parentType: { type: String, enum: ["Question", "Answer"], required: true },
-  parentId: { type: mongoose.Schema.Types.ObjectId, required: true },
-  value: { type: Number, enum: [1, -1], required: true } // 1 = upvote, -1 = downvote
-});
+        }
+    },
+    {timestamps:true}
+)
 
-voteSchema.index({ user: 1, parentType: 1, parentId: 1 }, { unique: true });
+voteSchema.index({userId:1,commentId:1},{unique:true})
 
-export default mongoose.model("Vote", voteSchema);
- 
+export default mongoose.models.Vote || mongoose.model("Vote", voteSchema);

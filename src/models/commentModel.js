@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
@@ -11,7 +12,7 @@ const commentSchema = new mongoose.Schema(
     parentId:{
       type:mongoose.Schema.Types.ObjectId,
       ref:"Comment",
-      required:true
+      default:null,
     },
     author:{
       type:mongoose.Schema.Types.ObjectId,
@@ -19,13 +20,17 @@ const commentSchema = new mongoose.Schema(
       required:true
     },
     votes:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Vote"
+      type:Number,
+      default:0,
     },
     body:{
       type:String,
       trim:true,
       required:true,
+    },
+    replyCount:{
+      type:Number,
+      default:0,
     }
 
 ,},{timestamps:true});
