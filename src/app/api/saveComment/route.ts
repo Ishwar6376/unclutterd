@@ -1,6 +1,7 @@
-import Comment from "@/models/commentModel";
-import connectDB from "@/db/dbConfig";
 import { NextResponse } from "next/server";
+import connectDB from "@/db/dbConfig";
+
+import Saved from "@/models/savedModel";
 import User from "@/models/userModel";
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
@@ -17,16 +18,17 @@ function getKey(header: any, callback: any) {
   });
 }
 
-export async function POST(req: Request) {
+export async function PATCH(req: Request) {
   await connectDB();
 
+  // 🔑 Verify JWT from Authorization header
   const authHeader = req.headers.get("authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const token = authHeader.split(" ")[1];
-  let user = null;
+  let user;
 
   try {
     const decoded: any = await new Promise((resolve, reject) => {
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
         token,
         getKey,
         {
-          audience: process.env.AUTH0_AUDIENCE,
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
           issuer: `https://${process.env.AUTH0_DOMAIN}/`,
           algorithms: ["RS256"],
         },
@@ -45,39 +47,27 @@ export async function POST(req: Request) {
       );
     });
 
-    const email = decoded.email;
-    if (!email) {
-      return NextResponse.json({ error: "Invalid token, no email found" }, { status: 401 });
+    user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    // find or create user
-    user = await User.findOneAndUpdate(
-      { email },
-      {
-        email,
-        username: decoded.name || email.split("@")[0],
-        avatar: decoded.picture || null,
-      },
-      { upsert: true, new: true }
-    );
   } catch (err) {
     console.error("JWT verification failed:", err);
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 
-  // get comment data from request
-  const { comment, questionId, parentId } = await req.json();
+  // ✅ Extract request data
+  const { commentId, saved } = await req.json();
 
-  const newComment = await Comment.create({
-    body: comment,
-    questionId,
-    votes: 0, // better to default to 0 instead of trusting frontend
-    author: user._id,
-    parentId: parentId || null,
-  });
+  // 📝 Either insert or update saved comment entry
+  const newSaved = await Saved.findOneAndUpdate(
+    { commentId, userId: user._id },
+    { commentId, userId: user._id, saved },
+    { upsert: true, new: true }
+  );
 
   return NextResponse.json({
-    message: "Comment Added",
-    newComment,
+    message: saved ? "Comment saved" : "Comment unsaved",
+    saved: newSaved,
   });
 }
