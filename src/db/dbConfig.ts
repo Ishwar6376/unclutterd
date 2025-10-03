@@ -1,19 +1,36 @@
-import mongoose from "mongoose";
-let isConnected=false;
-const connectDB = async () => {
-    if(isConnected) return;
-    try {
-        await mongoose.connect(process.env.MONGODB_URL!);
-        const connection = mongoose.connection;
-        connection.on("connected", () => {
-            console.log("Connected to MongoDB"); 
-            isConnected=true;
+import mongoose from "mongoose"
+const MONGODB_URI=process.env.MONGODB_URI!;
+if(!MONGODB_URI) throw new Error("Please define MONGODB_URI in your environment variables");
+ type Cached={
+    conn:typeof mongoose|null;
+    promise:Promise<typeof mongoose>|null;
+ };
+
+ let cached:Cached=(global as any).mongoose;
+ if(!cached){
+    cached=(global as any).mongoose={conn:null,promise:null};
+
+ }
+ const connectDB=async(): Promise<typeof mongoose> =>{
+    if(cached.conn) return cached.conn;
+
+    if(!cached.promise){
+        cached.promise=mongoose
+        .connect(MONGODB_URI)
+        .then((mongoose)=>{
+            const connection=mongoose.connection;
+
+            connection.once("connected",()=>console.log("MongoDB connected"));
+            connection.once("error",(err)=>console.error("MongoDB connection error:",err));
+            return mongoose;
+
         })
-        connection.on("error", (error) => {
-            console.error("Make sure mongoDB is running:", error);
-        })
-    } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
+        .catch((err)=>{
+            cached.promise=null;
+            throw err;
+        });
     }
-};
-export default connectDB
+    cached.conn=await cached.promise;
+    return cached.conn;
+ }
+ export default connectDB;

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "start:worker": "nodemon --watch src/workers --ext ts --exec \"ts-node -r tsconfig-paths/register --project tsconfig.worker.json src/workers/precomputeWorker.ts\"",
+    "dev:all": "concurrently \"npm run dev\" \"npm run start:worker\""
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.4.0",
@@ -14,15 +16,18 @@
     "axios": "^1.11.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.12",
     "gsap": "^3.13.0",
+    "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "lucide-react": "^0.536.0",
     "mongoose": "^8.17.1",
     "multer": "^2.0.2",
-    "next": "15.4.5",
+    "next": "^15.5.2",
     "next-cloudinary": "^6.16.0",
+    "node-cron": "^4.2.1",
     "ogl": "^1.0.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -36,12 +41,16 @@
     "@types/json-schema": "^7.0.15",
     "@types/mongoose": "^5.11.96",
     "@types/multer": "^2.0.0",
-    "@types/node": "^20",
+    "@types/node": "^20.19.13",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.4.5",
+    "nodemon": "^3.1.10",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
   }
 }

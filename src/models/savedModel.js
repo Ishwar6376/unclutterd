@@ -1,3 +1,6 @@
+
+import mongoose from "mongoose";
+
 const savedSchema=new mongoose.Schema(
     {
         userId:{
@@ -12,6 +15,5 @@ const savedSchema=new mongoose.Schema(
         }
     },{timestamps:true}
 );
-
-
+savedSchema.index({ userId: 1, commentId: 1 }, { unique: true });
 export default mongoose.models.Saved||mongoose.model("Saved",savedSchema);

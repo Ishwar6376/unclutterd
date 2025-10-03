@@ -1,19 +1,18 @@
-import { NextResponse } from "next/server";
 import connectDB from "@/db/dbConfig";
 import Comment from "@/models/commentModel";
-import Vote from "@/models/voteModel";
 import User from "@/models/userModel";
-import redis from "@/utils/reddis";
+import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
+import redis from "@/utils/reddis";
 import mongoose from "mongoose";
 
-// JWKS client
+// JWKS client for Auth0
 const client = jwksClient({
   jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
   cache: true,
   cacheMaxEntries: 5,
-  cacheMaxAge: 10 * 60 * 1000,
+  cacheMaxAge: 10 * 60 * 1000, // 10 minutes
   rateLimit: true,
   jwksRequestsPerMinute: 10,
 });
@@ -32,39 +31,24 @@ function getKey(header: any, callback: any) {
   });
 }
 
-// Comment interface for TypeScript
-interface IComment {
+type LeanComment = {
   _id: string;
   parentId: string | null;
-  questionId: string;
-  votes: number;
+  questionId?: string;
   auth0Id: string;
-  body?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+};
 
-// User interface
-interface IUser {
-  _id: mongoose.Types.ObjectId;
-  username: string;
-  email: string;
-  avatar?: string;
-}
-
-// PATCH handler
-export async function PATCH(req: Request) {
+export async function DELETE(req: Request) {
   await connectDB();
 
-  // 🔑 Verify JWT
+  // 1️⃣ Verify JWT
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
   const token = authHeader.split(" ")[1];
-  let user: IUser | null = null;
 
+  let user: any = null;
   try {
     const decoded: any = await new Promise((resolve, reject) => {
       jwt.verify(
@@ -81,14 +65,16 @@ export async function PATCH(req: Request) {
       );
     });
 
+    type LeanUser = { _id: string; username: string; email: string; avatar?: string };
     const auth0Id = decoded.sub;
+
     if (auth0Id) {
       const cachedUser = await redis.get(`user:${auth0Id}`);
       if (cachedUser) {
         const u = JSON.parse(cachedUser);
         user = { ...u, _id: new mongoose.Types.ObjectId(u._id) };
       } else {
-        const u = await User.findOne({ auth0Id }).lean<IUser>();
+        const u = await User.findOne({ auth0Id }).lean<LeanUser>();
         if (u) {
           await redis.setex(
             `user:${auth0Id}`,
@@ -109,61 +95,37 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-  // Extract request body
-  const { commentId, value } = await req.json();
+  // 2️⃣ Parse request
+  const { commentId } = await req.json();
   if (!commentId) return NextResponse.json({ error: "Missing commentId" }, { status: 400 });
 
-  // ---------- Update Redis ---------- //
-  const voteKey = `vote:${user._id}:${commentId}`;
-  const voteTsKey = `vote_ts:${user._id}:${commentId}`;
-  const timestamp = Date.now();
-  const ttlSeconds = 3600;
+  // 3️⃣ Fetch comment
+  const comment = await Comment.findById(commentId).lean<LeanComment>();
+  if (!comment) return NextResponse.json({ error: "Comment not found" }, { status: 404 });
 
-  if (value !== 0) {
-    await redis.multi()
-      .set(voteKey, value.toString(), "EX", ttlSeconds)
-      .set(voteTsKey, timestamp.toString(), "EX", ttlSeconds)
-      .exec();
-  } else {
-    await redis.multi()
-      .del(voteKey)
-      .del(voteTsKey)
-      .exec();
+  // 4️⃣ Ownership check
+  if (comment.auth0Id !== user.auth0Id) {
+    return NextResponse.json({ error: "Forbidden: not your comment" }, { status: 403 });
   }
 
-  // ---------- Update DB ---------- //
-  let delta = 0;
-  const existingVote = await Vote.findOne({ userId: user._id, commentId });
-
-  if (!existingVote && value !== 0) {
-    await Vote.create({ userId: user._id, commentId, value });
-    delta = value;
-  } else if (existingVote && value === 0) {
-    await existingVote.deleteOne();
-    delta = -existingVote.value;
-  } else if (existingVote && existingVote.value !== value) {
-    delta = value - existingVote.value;
-    existingVote.value = value;
-    await existingVote.save();
-  }
-
-  // Update Comment votes
-  const updatedComment = await Comment.findByIdAndUpdate(
-    commentId,
-    { $inc: { votes: delta } },
-    { new: true }
-  ).lean<IComment>();
-
-  // Update Redis hash for comment
-  if (updatedComment) {
-    await redis.hset(`comment:${commentId}`, "votes", updatedComment.votes.toString());
-  }
-
-  return NextResponse.json({
-    message: "Vote Updated",
-    userVote: value,
-    updatedComment,
+  // 5️⃣ Soft delete in MongoDB
+  await Comment.findByIdAndUpdate(commentId, {
+    body: "[deleted]",
+    auth0Id: null,
   });
+
+  // 6️⃣ Update Redis hash directly (no cache invalidation)
+  const commentKey = `comment:${commentId}`;
+  const pipeline = redis.pipeline();
+
+  pipeline.hset(commentKey, {
+    body: "[deleted]",
+    authorId: "",
+    authorName: "[deleted]",
+    authorEmail: "",
+  });
+
+  await pipeline.exec();
+
+  return NextResponse.json({ message: "Comment deleted" });
 }
