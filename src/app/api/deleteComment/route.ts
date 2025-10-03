@@ -121,7 +121,6 @@ export async function DELETE(req: Request) {
   pipeline.hset(commentKey, {
     body: "[deleted]",
     authorId: "",
-    authorName: "[deleted]",
     authorEmail: "",
   });
 
