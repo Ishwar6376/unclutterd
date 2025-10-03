@@ -12,5 +12,7 @@ const questionSchema = new mongoose.Schema({
 }
 ,{ timestamps: true }
 );
-
+questionSchema.index({ author: 1 });
+questionSchema.index({ tags: 1 });
+questionSchema.index({ votes: -1 });
 export default mongoose.models.Question || mongoose.model("Question", questionSchema);

@@ -26,6 +26,7 @@ export default function Home() {
     loginWithRedirect({
       authorizationParams: {
         screen_hint: 'signup',
+        returnTo:'/home'
       },
     });
   };

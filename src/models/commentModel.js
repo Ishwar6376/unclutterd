@@ -19,6 +19,14 @@ const commentSchema = new mongoose.Schema(
       ref:"User",
       required:true
     },
+    authorName:{
+      type:String,
+      required:true,
+    },
+    authorEmail:{
+      type:String,
+      required:true,
+    },
     votes:{
       type:Number,
       default:0,
@@ -34,5 +42,5 @@ const commentSchema = new mongoose.Schema(
     }
 
 ,},{timestamps:true});
-
+commentSchema.index({ questionId: 1, parentId: 1, _id: -1 });
 export default mongoose.models.Comment||mongoose.model("Comment", commentSchema);

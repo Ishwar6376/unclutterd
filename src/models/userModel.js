@@ -2,40 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const userSchema = new Schema(
   {
-    username: {
-      type: String,
-      required: [true, "Username is required"],
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    avatar: {
-      type: String,
-      default: "",
-    },
-    questions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Question",
-       
-      },
-    ],
-    answers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Answer",
-        
-      },
-    ],
-    comments: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment",
-        
-      },
-    ],
+    auth0Id: { type: String, index: true, unique: true, sparse: true }, 
+    username: { type: String, required: true, unique: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    avatar: { type: String, default: null },
   },
   { timestamps: true }
 );
