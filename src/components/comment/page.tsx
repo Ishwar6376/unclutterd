@@ -97,7 +97,7 @@ export default function Comment({ questionId }: Props) {
     setComments(prev =>
       prev.map(c =>
         c._id === deletedCommentId
-          ? { ...c, body: "[deleted]" }
+          ? { ...c, body: "[deleted]", authorName: "[deleted]" }
           : c
       )
     );
@@ -339,7 +339,7 @@ function CommentItem({ comment, onDelete, onEdit}: CommentItemProps ) {
     setReplies(prev =>
       prev.map(r =>
         r._id === deletedReplyId
-          ? { ...r, body: "[deleted]" }
+          ? { ...r, body: "[deleted]", authorName: "[deleted]" }
           : r
       )
     );
