@@ -17,6 +17,7 @@ same time.
 | 05 | [Redis here](05-redis-in-this-project.md) | The key scheme, cache-aside, the composite score, pipeline vs MULTI | 30 min |
 | 06 | [Auth flow](06-auth-flow.md) | Auth0, JWT, JWKS, and the authorization vulnerability | 30 min |
 | 07 | [Interview Q&A](07-interview-qa.md) | Likely questions, model answers, ambush handling, final checklist | 60 min |
+| 08 | [Tokens & auth flows](08-tokens-and-auth-flows.md) | Access vs refresh tokens, rotation, the Auth0 PKCE flow, building auth yourself | 40 min |
 
 **If you only have two hours:** read 01 and 07. Skim 02 §§3–5 and 03 §1.
 
