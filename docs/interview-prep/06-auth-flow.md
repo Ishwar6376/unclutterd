@@ -236,6 +236,7 @@ security outcome, which is exactly the reasoning interviewers are probing for.
 
 **Next:** file 07 — the actual Q&A rehearsal.
 
-**See also:** [08 — Tokens & auth flows](08-tokens-and-auth-flows.md) for refresh-token
-rotation, the full Auth0 authorization-code + PKCE sequence, and what building auth
-from scratch would involve.
+**See also:** [08 — Tokens, crypto & auth flows](08-tokens-and-auth-flows.md) for the
+crypto underneath this file (hashing vs encryption vs signing, how a JWT signature is
+computed, `alg:none` and RS256→HS256 confusion), plus refresh-token rotation, the full
+Auth0 authorization-code + PKCE sequence, and what building auth from scratch involves.

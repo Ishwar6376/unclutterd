@@ -1,11 +1,15 @@
 # 08 — Access Tokens, Refresh Tokens, and Three Auth Flows
 
 File 06 covers *verification* — JWKS, RS256, the audience bug. This file covers
-**issuance and renewal**: why two tokens exist, how the refresh dance actually
-works, the full Auth0 redirect flow, and what you'd have to build yourself if you
-dropped Auth0.
+everything around it: the **cryptography** underneath (§§2–3), **issuance and
+renewal** (§§4–6), the **full Auth0 redirect flow** (§7), and **what you'd build
+yourself** if you dropped Auth0 (§8).
 
 Read 06 first. This is the sequel.
+
+**If you're short on time:** §2 (hashing vs encryption vs signing) and §3c–3d (the
+JWT attacks) are the highest-yield pages in the whole set — they're asked in almost
+every backend interview and they're the ones candidates most often fumble.
 
 ---
 
@@ -784,6 +788,35 @@ token — it's embedded in the token, so an old one can't be reused.
 Refresh = permission to mint a new access token. ID = a statement about who the user
 is, for the UI, never a credential. **This repo sends the ID token as a credential in
 one place** — file 06 §4.
+
+**Hashing vs encryption?** Hashing is one-way and keyless — you can only ever
+recompute and compare. Encryption is two-way and keyed — it's for data you need back.
+Passwords are hashed, never encrypted; encrypting them means someone holds a key that
+turns the whole table back into plaintext.
+
+**Why not SHA-256 for passwords?** It's built to be fast, and speed is the attacker's
+resource. A GPU does billions of SHA-256s a second. argon2id is slow *and*
+memory-hard, so parallelising it costs real RAM per guess.
+
+**Salt vs pepper?** Salt is per-user, stored next to the hash, and kills
+precomputed rainbow tables plus the "same password → same hash" leak. Pepper is one
+app-wide secret stored outside the DB, so a database-only breach yields nothing.
+
+**Is a hash the same as a signature?** No. A bare hash proves nothing — an attacker
+who edits the data recomputes the hash. A signature is a hash **plus a key**, so only
+a key holder can produce a valid one.
+
+**HMAC vs digital signature?** HMAC uses one shared secret, so anyone who can verify
+can also forge, and there's no non-repudiation. RS256/ES256 splits it: private key
+signs, public key verifies. Needed the moment a second party verifies your tokens.
+
+**Is a JWT encrypted?** No — signed. Base64url is encoding, not encryption; anyone can
+read the payload. Signing gives integrity and authenticity, not confidentiality. If
+you truly need the payload hidden, that's JWE, not JWS.
+
+**Name a JWT attack.** `alg: none`, or RS256→HS256 confusion: flip the header to
+HS256 and sign with the server's *public* key as the HMAC secret. A verifier that
+takes `alg` from the header accepts it. Fix: pin `algorithms` — which this repo does.
 
 **Session cookies vs JWTs?** Sessions are stateful — trivially revocable, need a
 shared store, scale by adding Redis. JWTs are stateless — scale free, revoke badly.
