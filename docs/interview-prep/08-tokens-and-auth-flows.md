@@ -41,7 +41,305 @@ revocation back.**
 
 ---
 
-## 2. The two tokens, side by side
+## 2. Encoding, hashing, encryption, signing — the four things people confuse
+
+Interviewers ask this constantly, usually as "what's the difference between hashing
+and encryption?", and a surprising number of candidates blur them. Learn this table
+cold:
+
+| | Reversible? | Needs a key? | What it gives you | Example |
+|---|---|---|---|---|
+| **Encoding** | ✅ by anyone | ❌ | Nothing. Just a safe representation | base64url, URL-encoding |
+| **Hashing** | ❌ never | ❌ | Integrity, fingerprints, password storage | SHA-256, argon2id |
+| **Encryption** | ✅ with the key | ✅ | **Confidentiality** — nobody can read it | AES-GCM, RSA-OAEP |
+| **Signing** | n/a — you verify, not reverse | ✅ | **Authenticity + integrity** — nobody can forge or alter it | HMAC-SHA256, RS256 |
+
+**📌 The one-liner:**
+> Encoding is for transport, hashing is one-way, encryption hides content, signing
+> proves origin. A JWT is **encoded and signed, never encrypted** — so anyone can
+> read the payload, but nobody can change it.
+
+---
+
+### 2a. Encoding — and why the JWT payload is public
+
+Base64url is *not* security. It exists because a JWT travels in HTTP headers and
+URLs, which can't carry raw bytes. Anyone can paste a token into jwt.io and read
+every claim.
+
+`base64url` differs from plain base64 in two ways: `+/` become `-_` (URL-safe), and
+the `=` padding is stripped. That's the whole difference.
+
+**⚠ Therefore: never put anything secret in a JWT.** No PII beyond what the client
+already knows, no internal IDs you'd rather not leak, never a password or API key.
+If you genuinely need a confidential payload you want **JWE**, not JWS (§3f).
+
+---
+
+### 2b. Hashing — one-way, and two very different kinds
+
+A hash is deterministic, fixed-length, and irreversible, with the *avalanche*
+property: change one bit of input, roughly half the output bits flip.
+
+The critical distinction, and the one interviews probe:
+
+| | Fast hashes | Password hashes |
+|---|---|---|
+| Examples | SHA-256, SHA-3, BLAKE3 | **argon2id**, bcrypt, scrypt, PBKDF2 |
+| Speed | Billions/sec on a GPU | Deliberately ~100ms each |
+| Salted | No (you add one) | Built in, automatically |
+| Use for | Integrity, fingerprints, **high-entropy tokens** | **Anything a human chose** |
+
+**⚠ The classic wrong answer is "I hash passwords with SHA-256."** SHA-256 is
+*designed to be fast*, which is exactly wrong for passwords: a consumer GPU tries
+billions of candidates per second, so a short password falls quickly. A password
+hash is deliberately **slow** and, in argon2id/scrypt's case, **memory-hard** — it
+needs a large working memory buffer, which is cheap for your one server and ruinous
+for an attacker fanning out across thousands of GPU cores. That's the real defence:
+not secrecy, but making each guess cost something.
+
+**Salt** — a unique random value per user, stored in plaintext alongside the hash.
+
+> Salt isn't secret; its job is to make *precomputation* useless. Without it, one
+> rainbow table cracks every user in every breached database at once, and two users
+> with the same password get the same hash — which leaks that fact. A per-user salt
+> means the attacker has to start over for every single row.
+
+**Pepper** — an app-wide secret mixed in before hashing, stored **outside** the
+database (env var, KMS). If someone dumps the DB but not your server config, the
+hashes are uncrackable. It defends the exact scenario salt doesn't: a DB-only leak.
+
+**⚠ Constant-time comparison.** Comparing secrets with `===` leaks information: it
+returns early on the first differing byte, so response time reveals how many leading
+bytes were right. Use `crypto.timingSafeEqual`, or a library that does it for you —
+`argon2.verify` and `bcrypt.compare` already handle it.
+
+```js
+// ❌ leaks a byte at a time via timing
+if (tokenFromUser === storedToken) { ... }
+
+// ✅
+crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))   // throws if lengths differ
+```
+
+**→ "So why did you say SHA-256 for the refresh token in §8a?"** — a sharp
+interviewer will catch this apparent contradiction. Have the answer ready:
+
+> Because the threat model is different. Password hashing is slow in order to defeat
+> *guessing*, and guessing only works because humans pick low-entropy passwords. A
+> refresh token is 32 bytes from a CSPRNG — there is nothing to guess and no
+> dictionary to run. All I need is a one-way function so a DB leak doesn't yield
+> usable tokens, and I need it fast because I look it up on every refresh. Slow
+> hashing there would buy no security and add latency to every call.
+
+That answer — *match the primitive to the entropy of the input* — is the actual
+principle underneath both choices.
+
+---
+
+### 2c. Encryption — symmetric vs asymmetric
+
+**Symmetric (AES-256-GCM):** one key encrypts and decrypts. Fast, used for bulk
+data. GCM is **AEAD** — authenticated encryption — meaning it also detects tampering.
+Prefer AEAD modes always; plain AES-CBC is malleable and has produced a decade of
+padding-oracle bugs.
+
+**Asymmetric (RSA-OAEP, ECDH):** public key encrypts, private key decrypts. Slow,
+and size-limited, so nobody encrypts real data with it directly.
+
+**Hybrid encryption** is what everything actually does, TLS included: generate a
+random symmetric key, encrypt the data with AES, encrypt *that key* with the
+recipient's public key. You get asymmetric key distribution at symmetric speed.
+
+**⚠ Note the direction flips between encryption and signing** — worth stating
+explicitly, because it's the thing that makes asymmetric crypto click:
+
+```
+Encrypting:  PUBLIC key locks  →  PRIVATE key unlocks   (anyone can send you a secret)
+Signing:     PRIVATE key signs →  PUBLIC key verifies   (anyone can check it was you)
+```
+
+---
+
+### 2d. Signing — HMAC vs a true digital signature
+
+Both prove "this wasn't altered and came from someone holding the key." They differ
+in *who* can produce one:
+
+| | HMAC (HS256) | Digital signature (RS256, ES256) |
+|---|---|---|
+| Key | One shared secret | Private signs, public verifies |
+| Who can verify | Only someone who could also **forge** | Anyone, and they still can't forge |
+| Non-repudiation | ❌ — either party could have made it | ✅ — only the private key holder could |
+| Speed | Very fast | Slower to sign, fast to verify |
+| Use when | You sign and verify in the same service | A **different** party verifies |
+
+**📌 Say this:**
+> HMAC is symmetric, so verification and forgery are the same capability. The moment
+> a second party needs to verify my tokens, HMAC forces me to hand them the power to
+> mint tokens. That's why Auth0 uses RS256: they hold the private key, I fetch the
+> public key from JWKS, and I can check every token but could never issue one.
+
+This is the same argument as file 06 §3, arrived at from the crypto side rather than
+the JWKS side. Being able to give it either way is what makes it sound understood
+rather than memorised.
+
+---
+
+### 2e. The decision table
+
+| I want to… | Use | Never use |
+|---|---|---|
+| Store a user password | **argon2id** (bcrypt is fine) | SHA-256, MD5, encryption |
+| Store a refresh/reset token | SHA-256 (input is already random) | Plaintext |
+| Prove a token wasn't tampered with | HMAC-SHA256 / RS256 | Encoding, "unguessable" IDs |
+| Let a *third party* verify tokens | **RS256 / ES256** | HS256 |
+| Hide data from the user holding it | AES-256-**GCM**, or JWE | A JWT — it's readable |
+| Compare two secrets | `timingSafeEqual` | `===` |
+| Generate a token / salt / ID | `crypto.randomBytes` | `Math.random()` |
+
+**⚠ `Math.random()` is not a CSPRNG.** It's seeded predictably and its output stream
+can be reconstructed from a few samples. Session IDs, tokens, salts and password
+reset codes all need `crypto.randomBytes` / `crypto.randomUUID`.
+
+---
+
+## 3. How a JWT signature is actually computed — and the attacks on it
+
+File 06 §2 gives you the three parts. Here's what actually happens to them.
+
+### 3a. The signing input
+
+The signature is computed over the **base64url header and payload joined by a dot** —
+not over the JSON, and not including the signature itself:
+
+```
+signingInput = base64url(header) + "." + base64url(payload)
+signature    = HMAC-SHA256(signingInput, secret)           // HS256
+             = RSASSA-PKCS1-v1_5(signingInput, privateKey) // RS256
+
+jwt = signingInput + "." + base64url(signature)
+```
+
+A real, verifiable HS256 example (secret: `a-string-secret-at-least-256-bits-long`):
+
+```
+header   {"alg":"HS256","typ":"JWT"}
+payload  {"sub":"auth0|68f2c1","iss":"https://unclutterd.auth0.com/","aud":"https://api.unclutterd.dev","iat":1755561600,"exp":1755562500}
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+.eyJzdWIiOiJhdXRoMHw2OGYyYzEiLCJpc3MiOiJodHRwczovL3VuY2x1dHRlcmQuYXV0aDAuY29tLyIsImF1ZCI6Imh0dHBzOi8vYXBpLnVuY2x1dHRlcmQuZGV2IiwiaWF0IjoxNzU1NTYxNjAwLCJleHAiOjE3NTU1NjI1MDB9
+.rDC8V79l2FfXHDN0wFkY9qnhNcWSbNC_5zSdjKTBoKE
+```
+
+Change **one character** of that payload and the recomputed HMAC no longer matches
+the third part. That is the entire integrity guarantee — and note that it costs the
+verifier no database lookup, which is exactly why JWTs scale and exactly why they
+can't be revoked (§1).
+
+### 3b. Verification, in the correct order
+
+```
+1. split on "."; base64url-decode the header
+2. check alg is in YOUR allowlist        ← BEFORE you trust anything else
+3. select the key (by kid, from JWKS)
+4. recompute the signature over parts[0] + "." + parts[1]; compare constant-time
+5. ⚠ ONLY NOW decode the payload and trust it
+6. check claims: exp, nbf, iss, aud
+```
+
+**⚠ Step 2 comes before step 3 for a reason.** The header is attacker-controlled and
+unauthenticated until step 4 completes. Every JWT attack below is a variation on
+"the verifier trusted the header."
+
+### 3c. `alg: none`
+
+The JWT spec includes an "unsecured" mode where `alg` is `none` and the signature is
+empty. A verifier that reads `alg` from the header and dispatches on it will happily
+accept `{"alg":"none"}` with **any payload you like** and no signature at all.
+
+```
+eyJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.        ← note the empty third part
+```
+
+**Defence:** pin the algorithm — `algorithms: ["RS256"]`. Your routes do this
+correctly (file 06 §7); it is the single most important verify option.
+
+### 3d. RS256 → HS256 confusion
+
+The elegant one, and the best answer to "tell me about a JWT attack."
+
+> The server expects RS256 and verifies with Auth0's public key. The attacker
+> changes the header to `alg: HS256` and signs the token using **that public key as
+> the HMAC secret**. A verifier that picks the algorithm from the header does the
+> symmetric thing with the only key it has — the public one — and the signature
+> matches. The attacker forged a token out of nothing but public information.
+
+The root cause isn't the algorithms; it's that the *key type* and the *algorithm*
+were chosen independently, one by the server and one by the attacker. Pinning
+`algorithms` fixes it because the key and the algorithm are then decided together.
+
+### 3e. The rest of the list
+
+**Unverified decode.** `jwt.decode()` parses without checking anything. It exists for
+inspection, and it appears in production code more often than you'd hope. If a route
+reads `sub` from `decode()` and trusts it, auth is fully bypassed by editing the
+payload. Only `jwt.verify()` counts.
+
+**`kid` injection.** `kid` is a string the attacker controls, and it's used to look up
+a key. If the implementation treats it as a **file path** (`../../dev/null`, then sign
+with an empty key) or interpolates it into **SQL**, that's traversal or injection
+inside your auth layer. `jwks-rsa` looks it up in a fetched key set, so this repo is
+fine — but it's why "never build a key path out of `kid`" is a rule.
+
+**`jku` / `x5u` header injection.** These headers name a *URL* to fetch the verifying
+key from. Honour them and an attacker points you at their own key set and signs
+whatever they like. Never fetch keys from a location the token specifies; the JWKS
+URI belongs in your config, as it is here (file 06 §3).
+
+**Weak HMAC secret.** HS256 with a secret like `"secret"` or `"mysecretkey"` is
+brute-forceable offline in seconds — hashcat has a mode for exactly this. If you use
+HS256, use ≥256 bits from `crypto.randomBytes(32)`.
+
+**Missing claim checks.** A valid signature only proves *someone with the key* issued
+it. Without `exp` you've built a permanent credential; without `iss`/`aud` you accept
+tokens minted for a different API — **which is this codebase's live bug** (file 06 §7).
+
+### 3f. JWS vs JWE
+
+What everyone calls "a JWT" is a **JWS** — JSON Web *Signature*: signed, readable.
+
+**JWE** — JSON Web *Encryption* — has five parts instead of three, and the payload is
+genuinely encrypted, so even the holder can't read it.
+
+**→ If asked "when would you use JWE?"**
+> Almost never for an access token, because the client is supposed to know who it is,
+> and a JWE still can't be revoked. It's for cases where the token passes through a
+> party who shouldn't read the claims — an opaque session cookie carrying internal
+> state, or claims a partner relays but mustn't see. In practice, if the content is
+> that sensitive the better answer is usually to keep it server-side and hand out an
+> opaque reference, exactly like the refresh tokens in §4.
+
+### 3g. The registered claims
+
+| Claim | Name | Why it matters |
+|---|---|---|
+| `iss` | Issuer | Who minted it. Verify it. |
+| `sub` | Subject | The user. Auth0 puts `auth0\|abc123` here — your `auth0Id`. |
+| `aud` | Audience | **Which API it's for.** ⚠ Unchecked in this repo. |
+| `exp` | Expires | Seconds since epoch, **not** ms. |
+| `nbf` | Not before | Rarely used; clock-skew footgun. |
+| `iat` | Issued at | Lets you reject tokens older than a password change. |
+| `jti` | JWT ID | Unique ID — **the hook for a revocation denylist** (§8e). |
+
+**⚠ `exp` is in seconds, `Date.now()` is milliseconds.** Signing `exp: Date.now() +
+900000` creates a token that expires roughly 55,000 years from now. Use
+`Math.floor(Date.now() / 1000) + 900`, or just pass `expiresIn: "15m"` and let the
+library do it.
+
+---
+
+## 4. The two tokens, side by side
 
 | | Access token | Refresh token |
 |---|---|---|
@@ -67,7 +365,7 @@ issue 32+ bytes of `crypto.randomBytes`, store a **hash** of it, and look it up.
 
 ---
 
-## 3. The refresh dance
+## 5. The refresh dance
 
 ```
   Client                         API                        Auth server / DB
@@ -94,12 +392,12 @@ issue 32+ bytes of `crypto.randomBytes`, store a **hash** of it, and look it up.
 
 Steps 2–4 must be **invisible**. The user never sees the 401.
 
-### 3a. The stampede problem — the detail that separates candidates
+### 5a. The stampede problem — the detail that separates candidates
 
 Your comment page fires several requests at once (comments, votes, bookmarks). The
 access token expires. **All of them 401 simultaneously**, and all of them call
 `/refresh` at once. With rotation on, the first call invalidates the token the other
-four are still holding — so four of them fail, and with reuse detection (§3b) you
+four are still holding — so four of them fail, and with reuse detection (§5b) you
 just **logged the user out for making parallel requests**.
 
 The fix is a **single-flight** promise:
@@ -144,7 +442,7 @@ token gives you a 401 → refresh → 401 → refresh infinite loop.
 > out from under the others and reuse detection kills the session. So I'd gate it
 > behind a single shared promise and retry each request exactly once.
 
-### 3b. Rotation and reuse detection
+### 5b. Rotation and reuse detection
 
 **Rotation:** every refresh burns the old token and issues a new one.
 
@@ -170,7 +468,7 @@ Store `familyId` on every row so one `UPDATE ... WHERE familyId = ?` kills the c
 
 ---
 
-## 4. Where to store tokens — pick your poison
+## 6. Where to store tokens — pick your poison
 
 | Storage | XSS-safe | CSRF-safe | Survives reload |
 |---|---|---|---|
@@ -194,7 +492,7 @@ scores points, claiming httpOnly "solves XSS" loses them.
 
 ---
 
-## 5. Auth0's flow: Authorization Code + PKCE
+## 7. Auth0's flow: Authorization Code + PKCE
 
 This is what `@auth0/auth0-react` runs in [`AuthProvider.tsx`](../../src/providers/AuthProvider.tsx).
 
@@ -303,12 +601,12 @@ sends `getIdTokenClaims().__raw` — the **ID token** — as a bearer credential
 
 ---
 
-## 6. If you built it yourself — the full flow
+## 8. If you built it yourself — the full flow
 
 **Ingredients:** `argon2` (or `bcrypt`), `jsonwebtoken`, `crypto`, a `RefreshToken`
 collection.
 
-### 6a. Schema
+### 8a. Schema
 
 ```js
 // User
@@ -324,7 +622,7 @@ collection.
   userAgent, ip }     // "sign out other devices" needs these
 ```
 
-### 6b. Signup
+### 8b. Signup
 
 ```
 POST /api/auth/signup { email, password }
@@ -343,7 +641,7 @@ argon2id, which has no such limit.
 or not the email exists ("check your inbox"), and send a *"someone tried to sign up
 with your address"* mail to the existing account instead.
 
-### 6c. Login
+### 8c. Login
 
 ```
 POST /api/auth/login { email, password }
@@ -365,7 +663,7 @@ POST /api/auth/login { email, password }
 **Note step 3.** Skipping the hash when the user doesn't exist makes "no such user"
 measurably faster than "wrong password" — a timing oracle for enumerating accounts.
 
-### 6d. Refresh — with rotation and reuse detection
+### 8d. Refresh — with rotation and reuse detection
 
 ```
 POST /api/auth/refresh   (cookie only, no body)
@@ -381,7 +679,7 @@ POST /api/auth/refresh   (cookie only, no body)
   7. Set-Cookie (new rt) + return { accessToken }
 ```
 
-### 6e. Logout, and the revocation problem
+### 8e. Logout, and the revocation problem
 
 ```
 POST /api/auth/logout        → revoke this one row, clear cookie
@@ -408,14 +706,14 @@ valid until `exp` no matter what your DB says. Three options:
 
 That last line lands because it connects auth back to the caching layer in file 05.
 
-### 6f. Password reset
+### 8f. Password reset
 
 Same single-use-token pattern, and the same rules: token is `randomBytes`, **hashed**
 in the DB, 15-minute expiry, deleted on use, and — critically — **revoke every
 refresh token for that user on success.** A reset exists to lock an attacker out;
 leaving their session alive defeats the point.
 
-### 6g. HS256 or RS256 for your own tokens?
+### 8g. HS256 or RS256 for your own tokens?
 
 **HS256 is fine when you sign and verify in the same service.** One secret, faster,
 simpler. Reach for RS256 when a *different* party verifies (microservices, a mobile
@@ -428,7 +726,7 @@ HMAC secret.
 
 ---
 
-## 7. Auth0 vs. rolling your own
+## 9. Auth0 vs. rolling your own
 
 **→ "Why did you use Auth0 instead of building auth?"** — near-certain question.
 
@@ -458,7 +756,7 @@ HMAC secret.
 
 ---
 
-## 8. Rapid fire
+## 10. Rapid fire
 
 **Can you invalidate a JWT?** Not the token itself — it's self-validating. You
 invalidate the ability to *renew* it (delete the refresh token) and optionally add
